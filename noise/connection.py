@@ -40,21 +40,6 @@ class NoiseConnection(object):
         instance.noise_protocol = NoiseProtocol(protocol_name=name, backend=backend)
         return instance
 
-    def set_psks(self, psk: Union[bytes, str] = None, psks: List[Union[str, bytes]] = None):
-        if psk and psks:
-            raise NoisePSKError('Provide single PSK as psk or list of PSKs as psks')
-        if not psk and not psks:
-            raise NoisePSKError('No PSKs provided')
-
-        psks = psks or [psk]
-        if not all([isinstance(psk, (bytes, str)) for psk in psks]):
-            raise NoisePSKError('PSKs must be strings or bytes')
-
-        try:
-            self.noise_protocol.psks = [psk.encode('ascii') if isinstance(psk, str) else psk for psk in psks]
-        except UnicodeEncodeError:
-            raise NoisePSKError('If providing psks as (unicode) string, it must only contain ASCII characters')
-
     def set_prologue(self, prologue: Union[bytes, str]):
         if isinstance(prologue, bytes):
             self.noise_protocol.prologue = prologue

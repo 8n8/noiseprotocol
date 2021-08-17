@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 vector_files = [
     'vectors/cacophony.txt',
-    'vectors/snow-multipsk.txt'
 ]
 
 # As in test vectors specification (https://github.com/noiseprotocol/noise_wiki/wiki/Test-vectors)

@@ -72,3 +72,4 @@ target/
 .idea/
 
 venv/
+*.sw*
