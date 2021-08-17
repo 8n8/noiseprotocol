@@ -40,17 +40,6 @@ class NoiseConnection(object):
         instance.noise_protocol = NoiseProtocol(protocol_name=name, backend=backend)
         return instance
 
-    def set_prologue(self, prologue: Union[bytes, str]):
-        if isinstance(prologue, bytes):
-            self.noise_protocol.prologue = prologue
-        elif isinstance(prologue, str):
-            try:
-                self.noise_protocol.prologue = prologue.encode('ascii')
-            except UnicodeEncodeError:
-                raise NoiseValueError('Prologue must be ASCII string or bytes')
-        else:
-            raise NoiseValueError('Prologue must be ASCII string or bytes')
-
     def set_as_initiator(self):
         self.noise_protocol.initiator = True
         self._next_fn = self.write_message

@@ -26,7 +26,7 @@ def _prepare_test_vectors():
     for path in vector_files:
         with open(os.path.join(os.path.dirname(__file__), path)) as fd:
             logging.info('Reading vectors from file {}'.format(path))
-            vectors_list = json.load(fd)
+            vectors_list = json.load(fd)['vectors']
 
         for vector in vectors_list:
             for key, value in vector.copy().items():
@@ -73,11 +73,9 @@ class TestVectors(object):
             initiator.set_psks(psks=vector['init_psks'])
             responder.set_psks(psks=vector['resp_psks'])
 
-        initiator.set_prologue(vector['init_prologue'])
         initiator.set_as_initiator()
         self._set_keypairs(vector, initiator)
 
-        responder.set_prologue(vector['resp_prologue'])
         responder.set_as_responder()
         self._set_keypairs(vector, responder)
 
