@@ -1,7 +1,9 @@
 noiseprotocol
 =============
 
-The purpose of this fork is to make a minimal Noise implementation that just has the things that I need. Any changes are under the same license as the original author used.
+The purpose of this fork is to make a minimal Noise implementation that just has the things that I need. Any changes are under the same license as the original author used. 
+
+**It's not ready for other people to use yet, so please don't!**
 
 This repository contains source code of **noiseprotocol** - a Python 3 implementation of [Noise Protocol Framework](http://www.noiseprotocol.org/).
 Compatible with revisions 32 and 33.
