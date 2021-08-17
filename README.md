@@ -1,8 +1,7 @@
 noiseprotocol
 =============
-[![CircleCI](https://circleci.com/gh/plizonczyk/noiseprotocol.svg?style=svg)](https://circleci.com/gh/plizonczyk/noiseprotocol)
-[![PyPI](https://img.shields.io/pypi/v/noiseprotocol.svg)](https://pypi.python.org/pypi/noiseprotocol)
-[![Documentation Status](https://readthedocs.org/projects/noiseprotocol/badge/)](http://noiseprotocol.readthedocs.io/)
+
+The purpose of this fork is to make a minimal Noise implementation that just has the things that I need. Any changes are under the same license as the original author used.
 
 This repository contains source code of **noiseprotocol** - a Python 3 implementation of [Noise Protocol Framework](http://www.noiseprotocol.org/).
 Compatible with revisions 32 and 33.
