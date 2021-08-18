@@ -1,7 +1,6 @@
 from noise.exceptions import NoiseProtocolNameError
 from noise.functions.hash import hkdf
-from noise.patterns import (PatternN, PatternK, PatternX, PatternNN, PatternKN, PatternNK, PatternKK, PatternNX,
-                            PatternKX, PatternXN, PatternIN, PatternXK, PatternIK, PatternXX, PatternIX)
+from noise.patterns import PatternKK
 
 
 class NoiseBackend:

@@ -17,34 +17,6 @@ class CryptographyHash(Hash, metaclass=abc.ABCMeta):
         return digest.finalize()
 
 
-class SHA256Hash(CryptographyHash):
-    @property
-    def fn(self):
-        return hashes.SHA256
-
-    @property
-    def hashlen(self):
-        return 32
-
-    @property
-    def blocklen(self):
-        return 64
-
-
-class SHA512Hash(CryptographyHash):
-    @property
-    def fn(self):
-        return hashes.SHA512
-
-    @property
-    def hashlen(self):
-        return 64
-
-    @property
-    def blocklen(self):
-        return 128
-
-
 class BLAKE2sHash(CryptographyHash):
     @property
     def fn(self):
@@ -57,20 +29,6 @@ class BLAKE2sHash(CryptographyHash):
     @property
     def blocklen(self):
         return 64
-
-
-class BLAKE2bHash(CryptographyHash):
-    @property
-    def fn(self):
-        return partial(hashes.BLAKE2b, digest_size=self.hashlen)
-
-    @property
-    def hashlen(self):
-        return 64
-
-    @property
-    def blocklen(self):
-        return 128
 
 
 def hmac_hash(key, data, algorithm):

@@ -1,6 +1,6 @@
 import abc
 
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM, ChaCha20Poly1305
+from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 from noise.functions.cipher import Cipher
 
@@ -15,15 +15,6 @@ class CryptographyCipher(Cipher, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def format_nonce(self, n):
         raise NotImplementedError
-
-
-class AESGCMCipher(CryptographyCipher):
-    @property
-    def klass(self):
-        return AESGCM
-
-    def format_nonce(self, n):
-        return b'\x00\x00\x00\x00' + n.to_bytes(length=8, byteorder='big')
 
 
 class ChaCha20Cipher(CryptographyCipher):
