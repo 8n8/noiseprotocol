@@ -20,27 +20,19 @@ class NoiseProtocol(object):
     def __init__(self, protocol_name: bytes, backend: 'NoiseBackend'):
         self.name = protocol_name
         self.backend = backend
-        unpacked_name = UnpackedName.from_protocol_name(self.name)
-        mappings = {
-            'pattern': PatternKK,
-            'dh': ED25519,
-            'cipher': ChaCha20Cipher,
-            'hash': BLAKE2sHash,
-            'keypair': KeyPair25519
-        }
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
-        self.pattern = mappings['pattern']()
+        self.pattern = PatternKK()
 
         # Preinitialized
-        self.dh_fn = mappings['dh']()
-        self.hash_fn = mappings['hash']()
+        self.dh_fn = ED25519()
+        self.hash_fn = BLAKE2sHash()
         self.hmac = partial(backend.hmac, algorithm=self.hash_fn.fn)
         self.hkdf = partial(backend.hkdf, hmac_hash_fn=self.hmac)
 
         # Initialized where needed
-        self.cipher_class = mappings['cipher']
-        self.keypair_class = mappings['keypair']
+        self.cipher_class = ChaCha20Cipher
+        self.keypair_class = KeyPair25519
 
         self.prologue = None
         self.initiator = None
