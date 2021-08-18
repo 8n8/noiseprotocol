@@ -1,6 +1,10 @@
 from noise.exceptions import NoiseProtocolNameError
 from noise.functions.hash import hkdf
 from noise.patterns import PatternKK
+from noise.backends.default.diffie_hellmans import ED25519
+from noise.backends.default.ciphers import ChaCha20Cipher
+from noise.backends.default.hashes import BLAKE2sHash
+from noise.backends.default.keypairs import KeyPair25519
 
 
 class NoiseBackend:
@@ -21,26 +25,11 @@ class NoiseBackend:
 
         self.hkdf = hkdf
 
-    @property
-    def methods(self):
-        return {
-            'pattern': {'KK': PatternKK},
-            'dh': self.diffie_hellmans,
-            'cipher': self.ciphers,
-            'hash': self.hashes,
-            'keypair': self.keypairs
-        }
-
     def map_protocol_name_to_crypto(self, unpacked_name):
-        mappings = {}
-        # Validate if we know everything that Noise Protocol is supposed to use and map appropriate functions
-        for method, map_dict in self.methods.items():
-            looked_up_func = getattr(unpacked_name, method)
-            func = map_dict.get(looked_up_func)
-            if not func:
-                raise NoiseProtocolNameError('Unknown {} in Noise Protocol name, given {}, known {}'.format(
-                                             method, looked_up_func, " ".join(map_dict)))
-            mappings[method] = func
-
-        return mappings
-
+        return {
+            'pattern': PatternKK,
+            'dh': ED25519,
+            'cipher': ChaCha20Cipher,
+            'hash': BLAKE2sHash,
+            'keypair': KeyPair25519
+        }
