@@ -117,12 +117,3 @@ class NoiseConnection(object):
             return self.noise_protocol.cipher_state_decrypt.decrypt_with_ad(None, data)
         except InvalidTag:
             raise NoiseInvalidMessage('Failed authentication of message')
-
-    def get_handshake_hash(self) -> bytes:
-        return self.noise_protocol.handshake_hash
-
-    def rekey_inbound_cipher(self):
-        self.noise_protocol.cipher_state_decrypt.rekey()
-
-    def rekey_outbound_cipher(self):
-        self.noise_protocol.cipher_state_encrypt.rekey()
