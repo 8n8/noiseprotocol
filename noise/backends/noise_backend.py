@@ -13,23 +13,6 @@ class NoiseBackend:
     Dicts use convention for keys - they must match the string that occurs in Noise Protocol name.
     """
     def __init__(self):
-        self.patterns = {
-            'N': PatternN,
-            'K': PatternK,
-            'X': PatternX,
-            'NN': PatternNN,
-            'KN': PatternKN,
-            'NK': PatternNK,
-            'KK': PatternKK,
-            'NX': PatternNX,
-            'KX': PatternKX,
-            'XN': PatternXN,
-            'IN': PatternIN,
-            'XK': PatternXK,
-            'IK': PatternIK,
-            'XX': PatternXX,
-            'IX': PatternIX,
-        }
 
         self.diffie_hellmans = {}
         self.ciphers = {}
@@ -42,7 +25,7 @@ class NoiseBackend:
     @property
     def methods(self):
         return {
-            'pattern': self.patterns,
+            'pattern': {'KK': PatternKK},
             'dh': self.diffie_hellmans,
             'cipher': self.ciphers,
             'hash': self.hashes,
