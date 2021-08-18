@@ -6,6 +6,12 @@ from noise.exceptions import NoiseProtocolNameError, NoisePSKError, NoiseValidat
 from noise.state import HandshakeState
 from .constants import MAX_PROTOCOL_NAME_LEN, Empty
 
+from noise.patterns import PatternKK
+from noise.backends.default.diffie_hellmans import ED25519
+from noise.backends.default.ciphers import ChaCha20Cipher
+from noise.backends.default.hashes import BLAKE2sHash
+from noise.backends.default.keypairs import KeyPair25519
+
 
 class NoiseProtocol(object):
     """
@@ -15,7 +21,13 @@ class NoiseProtocol(object):
         self.name = protocol_name
         self.backend = backend
         unpacked_name = UnpackedName.from_protocol_name(self.name)
-        mappings = self.backend.map_protocol_name_to_crypto(unpacked_name)
+        mappings = {
+            'pattern': PatternKK,
+            'dh': ED25519,
+            'cipher': ChaCha20Cipher,
+            'hash': BLAKE2sHash,
+            'keypair': KeyPair25519
+        }
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         self.pattern = mappings['pattern']()
