@@ -31,13 +31,6 @@ class NoiseProtocol(object):
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         self.pattern = mappings['pattern']()
-        self.pattern_modifiers = unpacked_name.pattern_modifiers
-        if self.pattern_modifiers:
-            self.pattern.apply_pattern_modifiers(self.pattern_modifiers)
-
-        # Handle PSK handshake options
-        self.psks = None
-        self.is_psk_handshake = any([modifier.startswith('psk') for modifier in self.pattern_modifiers])
 
         # Preinitialized
         self.dh_fn = mappings['dh']()
@@ -78,12 +71,6 @@ class NoiseProtocol(object):
         del self.keypair_class
 
     def validate(self):
-        if self.is_psk_handshake:
-            if any([len(psk) != 32 for psk in self.psks]):
-                raise NoisePSKError('Invalid psk length! Has to be 32 bytes long')
-            if len(self.psks) != self.pattern.psk_count:
-                raise NoisePSKError('Bad number of PSKs provided to this protocol! {} are required, '
-                                    'given {}'.format(self.pattern.psk_count, len(self.psks)))
 
         if self.initiator is None:
             raise NoiseValidationError('You need to set role with NoiseConnection.set_as_initiator '
