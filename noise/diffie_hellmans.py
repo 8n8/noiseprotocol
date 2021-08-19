@@ -3,7 +3,7 @@ from cryptography.hazmat.primitives import serialization
 
 from noise.keypairs import KeyPair25519
 from noise.exceptions import NoiseValueError
-from noise.functions.dh import DH
+from noise.dh import DH
 
 
 class ED25519(DH):

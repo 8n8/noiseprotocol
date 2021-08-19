@@ -2,7 +2,7 @@ import abc
 
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
-from noise.functions.cipher import Cipher
+from noise.cipher import Cipher
 
 
 class CryptographyCipher(Cipher, metaclass=abc.ABCMeta):

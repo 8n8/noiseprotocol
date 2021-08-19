@@ -2,7 +2,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import x25519
 
 from noise.exceptions import NoiseValueError
-from noise.functions.keypair import KeyPair
+from noise.keypair import KeyPair
 
 
 class KeyPair25519(KeyPair):

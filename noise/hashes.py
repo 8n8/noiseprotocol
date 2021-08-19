@@ -5,7 +5,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hmac import HMAC
 
-from noise.functions.hash import Hash
+from noise.hash import Hash
 
 cryptography_backend = default_backend()
 

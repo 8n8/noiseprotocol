@@ -10,7 +10,7 @@ from noise.diffie_hellmans import ED25519
 from noise.ciphers import ChaCha20Cipher
 from noise.hashes import BLAKE2sHash
 from noise.keypairs import KeyPair25519
-from noise.functions.patterns import Pattern
+from noise.patterns import Pattern
 from noise.constants import TOKEN_S, TOKEN_E, TOKEN_ES, TOKEN_SS, TOKEN_EE, TOKEN_SE
 from noise.backend import DefaultNoiseBackend
 
