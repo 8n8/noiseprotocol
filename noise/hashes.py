@@ -5,9 +5,28 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hmac import HMAC
 
-from noise.hash import Hash
-
 cryptography_backend = default_backend()
+
+
+class Hash(metaclass=abc.ABCMeta):
+    @property
+    @abc.abstractmethod
+    def fn(self):
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def hashlen(self):
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def blocklen(self):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def hash(self, data):
+        raise NotImplementedError
 
 
 class CryptographyHash(Hash, metaclass=abc.ABCMeta):
