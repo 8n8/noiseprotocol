@@ -1,10 +1,9 @@
 import warnings
 from functools import partial
-from typing import Tuple
 
-from noise.exceptions import NoiseProtocolNameError, NoisePSKError, NoiseValidationError
+from noise.exceptions import NoiseValidationError
 from noise.state import HandshakeState
-from .constants import MAX_PROTOCOL_NAME_LEN, Empty
+from .constants import Empty
 
 from noise.diffie_hellmans import ED25519
 from noise.ciphers import ChaCha20Cipher
@@ -20,17 +19,17 @@ def hkdf(chaining_key, input_key_material, num_outputs, hmac_hash_fn):
     temp_key = hmac_hash_fn(chaining_key, input_key_material)
 
     # Sets output1 = HMAC-HASH(temp_key, byte(0x01)).
-    output1 = hmac_hash_fn(temp_key, b'\x01')
+    output1 = hmac_hash_fn(temp_key, b"\x01")
 
     # Sets output2 = HMAC-HASH(temp_key, output1 || byte(0x02)).
-    output2 = hmac_hash_fn(temp_key, output1 + b'\x02')
+    output2 = hmac_hash_fn(temp_key, output1 + b"\x02")
 
     # If num_outputs == 2 then returns the pair (output1, output2).
     if num_outputs == 2:
         return output1, output2
 
     # Sets output3 = HMAC-HASH(temp_key, output2 || byte(0x03)).
-    output3 = hmac_hash_fn(temp_key, output2 + b'\x03')
+    output3 = hmac_hash_fn(temp_key, output2 + b"\x03")
 
     # Returns the triple (output1, output2, output3).
     return output1, output2, output3
@@ -42,21 +41,13 @@ class DefaultNoiseBackend:
     """
 
     def __init__(self):
-        self.diffie_hellmans = {
-            '25519': ED25519
-        }
+        self.diffie_hellmans = {"25519": ED25519}
 
-        self.ciphers = {
-            'ChaChaPoly': ChaCha20Cipher
-        }
+        self.ciphers = {"ChaChaPoly": ChaCha20Cipher}
 
-        self.hashes = {
-            'BLAKE2s': BLAKE2sHash
-        }
+        self.hashes = {"BLAKE2s": BLAKE2sHash}
 
-        self.keypairs = {
-            '25519': KeyPair25519
-        }
+        self.keypairs = {"25519": KeyPair25519}
 
         self.hmac = hmac_hash
 
@@ -67,8 +58,9 @@ class NoiseProtocol(object):
     """
     TODO: Document
     """
+
     def __init__(self):
-        self.name = b'Noise_KK_25519_ChaChaPoly_BLAKE2s'
+        self.name = b"Noise_KK_25519_ChaChaPoly_BLAKE2s"
         self.backend = DefaultNoiseBackend()
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
@@ -94,7 +86,7 @@ class NoiseProtocol(object):
         self.cipher_state_encrypt = Empty()
         self.cipher_state_decrypt = Empty()
 
-        self.keypairs = {'s': None, 'e': None, 'rs': None, 're': None}
+        self.keypairs = {"s": None, "e": None, "rs": None, "re": None}
 
     def handshake_done(self):
         if self.pattern.one_way:
@@ -115,21 +107,29 @@ class NoiseProtocol(object):
     def validate(self):
 
         if self.initiator is None:
-            raise NoiseValidationError('You need to set role with NoiseConnection.set_as_initiator '
-                                       'or NoiseConnection.set_as_responder')
+            raise NoiseValidationError(
+                "You need to set role with NoiseConnection.set_as_initiator "
+                "or NoiseConnection.set_as_responder"
+            )
 
         for keypair in self.pattern.get_required_keypairs(self.initiator):
             if self.keypairs[keypair] is None:
-                raise NoiseValidationError('Keypair {} has to be set for chosen handshake pattern'.format(keypair))
+                raise NoiseValidationError(
+                    "Keypair {} has to be set for chosen handshake pattern".format(
+                        keypair
+                    )
+                )
 
-        if self.keypairs['e'] is not None or self.keypairs['re'] is not None:
-            warnings.warn('One of ephemeral keypairs is already set. '
-                          'This is OK for testing, but should NEVER happen in production!')
+        if self.keypairs["e"] is not None or self.keypairs["re"] is not None:
+            warnings.warn(
+                "One of ephemeral keypairs is already set. "
+                "This is OK for testing, but should NEVER happen in production!"
+            )
 
     def initialise_handshake_state(self):
-        kwargs = {'initiator': self.initiator}
+        kwargs = {"initiator": self.initiator}
         if self.prologue:
-            kwargs['prologue'] = self.prologue
+            kwargs["prologue"] = self.prologue
         for keypair, value in self.keypairs.items():
             if value:
                 kwargs[keypair] = value
@@ -140,13 +140,7 @@ class NoiseProtocol(object):
 class PatternKK(Pattern):
     def __init__(self):
         super(PatternKK, self).__init__()
-        self.name = 'KK'
+        self.name = "KK"
 
-        self.pre_messages = [
-            [TOKEN_S],
-            [TOKEN_S]
-        ]
-        self.tokens = [
-            [TOKEN_E, TOKEN_ES, TOKEN_SS],
-            [TOKEN_E, TOKEN_EE, TOKEN_SE]
-        ]
+        self.pre_messages = [[TOKEN_S], [TOKEN_S]]
+        self.tokens = [[TOKEN_E, TOKEN_ES, TOKEN_SS], [TOKEN_E, TOKEN_EE, TOKEN_SE]]

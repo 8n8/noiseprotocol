@@ -1,10 +1,9 @@
 from enum import Enum
-from typing import Union, List
 
 from cryptography.exceptions import InvalidTag
 
 from noise.constants import MAX_MESSAGE_LEN
-from noise.exceptions import NoisePSKError, NoiseValueError, NoiseHandshakeError, NoiseInvalidMessage
+from noise.exceptions import NoiseHandshakeError, NoiseInvalidMessage
 from .noise_protocol import NoiseProtocol
 
 
@@ -15,8 +14,12 @@ class Keypair(Enum):
     REMOTE_EPHEMERAL = 4
 
 
-_keypairs = {Keypair.STATIC: 's', Keypair.REMOTE_STATIC: 'rs',
-             Keypair.EPHEMERAL: 'e', Keypair.REMOTE_EPHEMERAL: 're'}
+_keypairs = {
+    Keypair.STATIC: "s",
+    Keypair.REMOTE_STATIC: "rs",
+    Keypair.EPHEMERAL: "e",
+    Keypair.REMOTE_EPHEMERAL: "re",
+}
 
 
 class NoiseConnection(object):
@@ -43,35 +46,43 @@ class NoiseConnection(object):
         self._next_fn = self.read_message
 
     def set_keypair_from_private_bytes(self, keypair: Keypair, private_bytes: bytes):
-        self.noise_protocol.keypairs[_keypairs[keypair]] = \
-            self.noise_protocol.dh_fn.klass.from_private_bytes(private_bytes)
+        self.noise_protocol.keypairs[
+            _keypairs[keypair]
+        ] = self.noise_protocol.dh_fn.klass.from_private_bytes(private_bytes)
 
     def set_keypair_from_public_bytes(self, keypair: Keypair, private_bytes: bytes):
-        self.noise_protocol.keypairs[_keypairs[keypair]] = \
-            self.noise_protocol.dh_fn.klass.from_public_bytes(private_bytes)
+        self.noise_protocol.keypairs[
+            _keypairs[keypair]
+        ] = self.noise_protocol.dh_fn.klass.from_public_bytes(private_bytes)
 
     def set_keypair_from_private_path(self, keypair: Keypair, path: str):
-        with open(path, 'rb') as fd:
-            self.noise_protocol.keypairs[_keypairs[keypair]] = \
-                self.noise_protocol.dh_fn.klass.from_private_bytes(fd.read())
+        with open(path, "rb") as fd:
+            self.noise_protocol.keypairs[
+                _keypairs[keypair]
+            ] = self.noise_protocol.dh_fn.klass.from_private_bytes(fd.read())
 
     def set_keypair_from_public_path(self, keypair: Keypair, path: str):
-        with open(path, 'rb') as fd:
-            self.noise_protocol.keypairs[_keypairs[keypair]] = \
-                self.noise_protocol.dh_fn.klass.from_public_bytes(fd.read())
+        with open(path, "rb") as fd:
+            self.noise_protocol.keypairs[
+                _keypairs[keypair]
+            ] = self.noise_protocol.dh_fn.klass.from_public_bytes(fd.read())
 
     def start_handshake(self):
         self.noise_protocol.validate()
         self.noise_protocol.initialise_handshake_state()
         self._handshake_started = True
 
-    def write_message(self, payload: bytes=b'') -> bytearray:
+    def write_message(self, payload: bytes = b"") -> bytearray:
         if not self._handshake_started:
-            raise NoiseHandshakeError('Call NoiseConnection.start_handshake first')
+            raise NoiseHandshakeError("Call NoiseConnection.start_handshake first")
         if self._next_fn != self.write_message:
-            raise NoiseHandshakeError('NoiseConnection.read_message has to be called now')
+            raise NoiseHandshakeError(
+                "NoiseConnection.read_message has to be called now"
+            )
         if self.handshake_finished:
-            raise NoiseHandshakeError('Handshake finished. NoiseConnection.encrypt should be used now')
+            raise NoiseHandshakeError(
+                "Handshake finished. NoiseConnection.encrypt should be used now"
+            )
         self._next_fn = self.read_message
 
         buffer = bytearray()
@@ -82,11 +93,15 @@ class NoiseConnection(object):
 
     def read_message(self, data: bytes) -> bytearray:
         if not self._handshake_started:
-            raise NoiseHandshakeError('Call NoiseConnection.start_handshake first')
+            raise NoiseHandshakeError("Call NoiseConnection.start_handshake first")
         if self._next_fn != self.read_message:
-            raise NoiseHandshakeError('NoiseConnection.write_message has to be called now')
+            raise NoiseHandshakeError(
+                "NoiseConnection.write_message has to be called now"
+            )
         if self.handshake_finished:
-            raise NoiseHandshakeError('Handshake finished. NoiseConnection.decrypt should be used now')
+            raise NoiseHandshakeError(
+                "Handshake finished. NoiseConnection.decrypt should be used now"
+            )
         self._next_fn = self.write_message
 
         buffer = bytearray()
@@ -97,17 +112,25 @@ class NoiseConnection(object):
 
     def encrypt(self, data: bytes) -> bytes:
         if not self.handshake_finished:
-            raise NoiseHandshakeError('Handshake not finished yet!')
+            raise NoiseHandshakeError("Handshake not finished yet!")
         if not isinstance(data, bytes) or len(data) > MAX_MESSAGE_LEN:
-            raise NoiseInvalidMessage('Data must be bytes and less or equal {} bytes in length'.format(MAX_MESSAGE_LEN))
+            raise NoiseInvalidMessage(
+                "Data must be bytes and less or equal {} bytes in length".format(
+                    MAX_MESSAGE_LEN
+                )
+            )
         return self.noise_protocol.cipher_state_encrypt.encrypt_with_ad(None, data)
 
     def decrypt(self, data: bytes) -> bytes:
         if not self.handshake_finished:
-            raise NoiseHandshakeError('Handshake not finished yet!')
+            raise NoiseHandshakeError("Handshake not finished yet!")
         if not isinstance(data, bytes) or len(data) > MAX_MESSAGE_LEN:
-            raise NoiseInvalidMessage('Data must be bytes and less or equal {} bytes in length'.format(MAX_MESSAGE_LEN))
+            raise NoiseInvalidMessage(
+                "Data must be bytes and less or equal {} bytes in length".format(
+                    MAX_MESSAGE_LEN
+                )
+            )
         try:
             return self.noise_protocol.cipher_state_decrypt.decrypt_with_ad(None, data)
         except InvalidTag:
-            raise NoiseInvalidMessage('Failed authentication of message')
+            raise NoiseInvalidMessage("Failed authentication of message")
