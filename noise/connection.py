@@ -3,7 +3,7 @@ from typing import Union, List
 
 from cryptography.exceptions import InvalidTag
 
-from noise.backends.default import noise_backend
+from noise.backends import noise_backend
 from noise.constants import MAX_MESSAGE_LEN
 from noise.exceptions import NoisePSKError, NoiseValueError, NoiseHandshakeError, NoiseInvalidMessage
 from .noise_protocol import NoiseProtocol

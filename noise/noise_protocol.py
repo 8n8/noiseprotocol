@@ -6,10 +6,10 @@ from noise.exceptions import NoiseProtocolNameError, NoisePSKError, NoiseValidat
 from noise.state import HandshakeState
 from .constants import MAX_PROTOCOL_NAME_LEN, Empty
 
-from noise.backends.default.diffie_hellmans import ED25519
-from noise.backends.default.ciphers import ChaCha20Cipher
-from noise.backends.default.hashes import BLAKE2sHash
-from noise.backends.default.keypairs import KeyPair25519
+from noise.backends.diffie_hellmans import ED25519
+from noise.backends.ciphers import ChaCha20Cipher
+from noise.backends.hashes import BLAKE2sHash
+from noise.backends.keypairs import KeyPair25519
 from noise.functions.patterns import Pattern
 from noise.constants import TOKEN_S, TOKEN_E, TOKEN_ES, TOKEN_SS, TOKEN_EE, TOKEN_SE
 

@@ -1,7 +1,7 @@
 from cryptography.hazmat.primitives.asymmetric import x25519
 from cryptography.hazmat.primitives import serialization
 
-from noise.backends.default.keypairs import KeyPair25519
+from noise.backends.keypairs import KeyPair25519
 from noise.exceptions import NoiseValueError
 from noise.functions.dh import DH
 
