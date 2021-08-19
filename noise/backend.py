@@ -1,7 +1,7 @@
-from noise.backends.ciphers import ChaCha20Cipher
-from noise.backends.diffie_hellmans import ED25519
-from noise.backends.hashes import hmac_hash, BLAKE2sHash
-from noise.backends.keypairs import KeyPair25519
+from noise.ciphers import ChaCha20Cipher
+from noise.diffie_hellmans import ED25519
+from noise.hashes import hmac_hash, BLAKE2sHash
+from noise.keypairs import KeyPair25519
 from noise.functions.hash import hkdf
 
 

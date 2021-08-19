@@ -6,13 +6,13 @@ from noise.exceptions import NoiseProtocolNameError, NoisePSKError, NoiseValidat
 from noise.state import HandshakeState
 from .constants import MAX_PROTOCOL_NAME_LEN, Empty
 
-from noise.backends.diffie_hellmans import ED25519
-from noise.backends.ciphers import ChaCha20Cipher
-from noise.backends.hashes import BLAKE2sHash
-from noise.backends.keypairs import KeyPair25519
+from noise.diffie_hellmans import ED25519
+from noise.ciphers import ChaCha20Cipher
+from noise.hashes import BLAKE2sHash
+from noise.keypairs import KeyPair25519
 from noise.functions.patterns import Pattern
 from noise.constants import TOKEN_S, TOKEN_E, TOKEN_ES, TOKEN_SS, TOKEN_EE, TOKEN_SE
-from noise.backends import noise_backend
+from noise.backend import DefaultNoiseBackend
 
 
 class NoiseProtocol(object):
@@ -21,7 +21,7 @@ class NoiseProtocol(object):
     """
     def __init__(self):
         self.name = b'Noise_KK_25519_ChaChaPoly_BLAKE2s'
-        self.backend = noise_backend
+        self.backend = DefaultNoiseBackend()
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         self.pattern = PatternKK()
