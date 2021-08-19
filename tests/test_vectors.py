@@ -67,8 +67,8 @@ class TestVectors(object):
                 fn(keypair, vector[name])
 
     def test_vector(self, vector):
-        initiator = NoiseConnection.from_name(vector['protocol_name'])
-        responder = NoiseConnection.from_name(vector['protocol_name'])
+        initiator = NoiseConnection.from_name()
+        responder = NoiseConnection.from_name()
         if 'init_psks' in vector and 'resp_psks' in vector:
             initiator.set_psks(psks=vector['init_psks'])
             responder.set_psks(psks=vector['resp_psks'])

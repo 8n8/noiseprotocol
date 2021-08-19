@@ -30,14 +30,9 @@ class NoiseConnection(object):
         self._next_fn = None
 
     @classmethod
-    def from_name(cls, name: Union[str, bytes], backend=noise_backend):
+    def from_name(cls, backend=noise_backend):
         instance = cls()
-        # Forgiving passing string. Bytes are good too, anything else will fail inside NoiseProtocol
-        try:
-            instance.protocol_name = name.encode('ascii') if isinstance(name, str) else name
-        except ValueError:
-            raise NoiseValueError('If passing string as protocol name, it must contain only ASCII characters')
-        instance.noise_protocol = NoiseProtocol(protocol_name=name, backend=backend)
+        instance.noise_protocol = NoiseProtocol(backend=backend)
         return instance
 
     def set_as_initiator(self):

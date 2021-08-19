@@ -18,8 +18,8 @@ class NoiseProtocol(object):
     """
     TODO: Document
     """
-    def __init__(self, protocol_name: bytes, backend: 'NoiseBackend'):
-        self.name = protocol_name
+    def __init__(self, backend: 'NoiseBackend'):
+        self.name = b'Noise_KK_25519_ChaChaPoly_BLAKE2s'
         self.backend = backend
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
