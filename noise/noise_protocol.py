@@ -12,15 +12,16 @@ from noise.backends.hashes import BLAKE2sHash
 from noise.backends.keypairs import KeyPair25519
 from noise.functions.patterns import Pattern
 from noise.constants import TOKEN_S, TOKEN_E, TOKEN_ES, TOKEN_SS, TOKEN_EE, TOKEN_SE
+from noise.backends import noise_backend
 
 
 class NoiseProtocol(object):
     """
     TODO: Document
     """
-    def __init__(self, backend: 'NoiseBackend'):
+    def __init__(self):
         self.name = b'Noise_KK_25519_ChaChaPoly_BLAKE2s'
-        self.backend = backend
+        self.backend = noise_backend
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         self.pattern = PatternKK()
@@ -28,8 +29,8 @@ class NoiseProtocol(object):
         # Preinitialized
         self.dh_fn = ED25519()
         self.hash_fn = BLAKE2sHash()
-        self.hmac = partial(backend.hmac, algorithm=self.hash_fn.fn)
-        self.hkdf = partial(backend.hkdf, hmac_hash_fn=self.hmac)
+        self.hmac = partial(self.backend.hmac, algorithm=self.hash_fn.fn)
+        self.hkdf = partial(self.backend.hkdf, hmac_hash_fn=self.hmac)
 
         # Initialized where needed
         self.cipher_class = ChaCha20Cipher

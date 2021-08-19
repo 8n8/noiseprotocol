@@ -3,7 +3,6 @@ from typing import Union, List
 
 from cryptography.exceptions import InvalidTag
 
-from noise.backends import noise_backend
 from noise.constants import MAX_MESSAGE_LEN
 from noise.exceptions import NoisePSKError, NoiseValueError, NoiseHandshakeError, NoiseInvalidMessage
 from .noise_protocol import NoiseProtocol
@@ -30,9 +29,9 @@ class NoiseConnection(object):
         self._next_fn = None
 
     @classmethod
-    def from_name(cls, backend=noise_backend):
+    def from_name(cls):
         instance = cls()
-        instance.noise_protocol = NoiseProtocol(backend=backend)
+        instance.noise_protocol = NoiseProtocol()
         return instance
 
     def set_as_initiator(self):
