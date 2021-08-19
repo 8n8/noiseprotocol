@@ -25,17 +25,11 @@ _keypairs = {
 class NoiseConnection(object):
     def __init__(self):
         self.backend = None
-        self.noise_protocol = None
+        self.noise_protocol = NoiseProtocol()
         self.protocol_name = None
         self.handshake_finished = False
         self._handshake_started = False
         self._next_fn = None
-
-    @classmethod
-    def from_name(cls):
-        instance = cls()
-        instance.noise_protocol = NoiseProtocol()
-        return instance
 
     def set_as_initiator(self):
         self.noise_protocol.initiator = True
