@@ -42,8 +42,6 @@ class DefaultNoiseBackend:
     """
 
     def __init__(self):
-        super(DefaultNoiseBackend, self).__init__()
-
         self.diffie_hellmans = {
             '25519': ED25519
         }
