@@ -34,7 +34,7 @@ MAX_NONCE = 2 ** 64 - 1
 cryptography_backend = default_backend()
 
 
-class KeyPair(metaclass=abc.ABCMeta):
+class KeyPair25519(metaclass=abc.ABCMeta):
     def __init__(self, private=None, public=None, public_bytes=None):
         self.private = private
         self.public = public
@@ -50,8 +50,6 @@ class KeyPair(metaclass=abc.ABCMeta):
     def from_public_bytes(cls, public_bytes):
         raise NotImplementedError
 
-
-class KeyPair25519(KeyPair):
     @classmethod
     def from_private_bytes(cls, private_bytes):
         if len(private_bytes) != 32:
