@@ -31,44 +31,6 @@ MAX_MESSAGE_LEN = 65535
 MAX_NONCE = 2 ** 64 - 1
 
 
-class Pattern(object):
-    def __init__(self):
-        # As per specification, if both parties have pre-messages, the initiator is listed first. To reduce complexity,
-        # pre_messages shall be a list of two lists:
-        # the first for the initiator's pre-messages, the second for the responder
-        self.pre_messages = [[], []]
-
-        # List of lists of valid tokens, alternating between tokens for initiator and responder
-        self.tokens = []
-
-        self.name = ""
-        self.one_way = False
-        self.psk_count = 0
-
-    def has_pre_messages(self):
-        return any(map(lambda x: len(x) > 0, self.pre_messages))
-
-    def get_initiator_pre_messages(self) -> list:
-        return self.pre_messages[0].copy()
-
-    def get_responder_pre_messages(self) -> list:
-        return self.pre_messages[1].copy()
-
-    def get_required_keypairs(self, initiator: bool) -> list:
-        required = []
-        if initiator:
-            if self.name[0] in ("K", "X", "I"):
-                required.append("s")
-            if self.one_way or self.name[1] == "K":
-                required.append("rs")
-        else:
-            if self.name[0] == "K":
-                required.append("rs")
-            if self.one_way or self.name[1] in ["K", "X"]:
-                required.append("s")
-        return required
-
-
 cryptography_backend = default_backend()
 
 
@@ -999,10 +961,43 @@ class NoiseConnection(object):
             raise RuntimeError("Failed authentication of message")
 
 
-class PatternKK(Pattern):
+class PatternKK(object):
     def __init__(self):
-        super(PatternKK, self).__init__()
+        # As per specification, if both parties have pre-messages, the initiator is listed first. To reduce complexity,
+        # pre_messages shall be a list of two lists:
+        # the first for the initiator's pre-messages, the second for the responder
+        self.pre_messages = [[], []]
+
+        # List of lists of valid tokens, alternating between tokens for initiator and responder
+        self.tokens = []
+
+        self.name = ""
+        self.one_way = False
+        self.psk_count = 0
         self.name = "KK"
 
         self.pre_messages = [[TOKEN_S], [TOKEN_S]]
         self.tokens = [[TOKEN_E, TOKEN_ES, TOKEN_SS], [TOKEN_E, TOKEN_EE, TOKEN_SE]]
+
+    def has_pre_messages(self):
+        return any(map(lambda x: len(x) > 0, self.pre_messages))
+
+    def get_initiator_pre_messages(self) -> list:
+        return self.pre_messages[0].copy()
+
+    def get_responder_pre_messages(self) -> list:
+        return self.pre_messages[1].copy()
+
+    def get_required_keypairs(self, initiator: bool) -> list:
+        required = []
+        if initiator:
+            if self.name[0] in ("K", "X", "I"):
+                required.append("s")
+            if self.one_way or self.name[1] == "K":
+                required.append("rs")
+        else:
+            if self.name[0] == "K":
+                required.append("rs")
+            if self.one_way or self.name[1] in ["K", "X"]:
+                required.append("s")
+        return required
