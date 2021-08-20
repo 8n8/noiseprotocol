@@ -4,25 +4,36 @@ from cryptography.exceptions import InvalidTag
 import abc
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
-from noise.constants import MAX_MESSAGE_LEN
 from cryptography.hazmat.primitives.asymmetric import x25519
-from noise.constants import (
-    TOKEN_S,
-    TOKEN_E,
-    TOKEN_ES,
-    TOKEN_SS,
-    TOKEN_EE,
-    TOKEN_SE,
-    MAX_NONCE,
-)
 from functools import partial
-from .constants import Empty
 import warnings
 from typing import Union, List
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives import serialization
+
+
+class Empty:
+    pass
+
+
+# Handshake pattern tokens
+TOKEN_E = "e"
+TOKEN_S = "s"
+TOKEN_EE = "ee"
+TOKEN_ES = "es"
+TOKEN_SE = "se"
+TOKEN_SS = "ss"
+TOKEN_PSK = "psk"
+
+
+# In bytes, as in Section 8 of specification (rev 32)
+MAX_PROTOCOL_NAME_LEN = 255
+
+MAX_MESSAGE_LEN = 65535
+
+MAX_NONCE = 2 ** 64 - 1
 
 
 class NoiseValueError(Exception):
