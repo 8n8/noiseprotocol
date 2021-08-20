@@ -25,7 +25,6 @@ TOKEN_EE = "ee"
 TOKEN_ES = "es"
 TOKEN_SE = "se"
 TOKEN_SS = "ss"
-TOKEN_PSK = "psk"
 
 MAX_MESSAGE_LEN = 65535
 
@@ -54,35 +53,6 @@ class Pattern(object):
 
     def get_responder_pre_messages(self) -> list:
         return self.pre_messages[1].copy()
-
-    def apply_pattern_modifiers(self, modifiers: List[str]) -> None:
-        # Applies given pattern modifiers to self.tokens of the Pattern instance.
-        for modifier in modifiers:
-            if modifier.startswith("psk"):
-                try:
-                    index = int(modifier.replace("psk", "", 1))
-                except ValueError:
-                    raise ValueError("Improper psk modifier {}".format(modifier))
-
-                if index // 2 > len(self.tokens):
-                    raise ValueError(
-                        "Modifier {} cannot be applied - pattern has not enough messages".format(
-                            modifier
-                        )
-                    )
-
-                # Add TOKEN_PSK in the correct place in the correct message
-                if index == 0:  # if 0, insert at the beginning of first message
-                    self.tokens[0].insert(0, TOKEN_PSK)
-                else:  # if bigger than zero, append at the end of first, second etc.
-                    self.tokens[index - 1].append(TOKEN_PSK)
-                self.psk_count += 1
-
-            elif modifier == "fallback":
-                raise NotImplementedError  # TODO implement
-
-            else:
-                raise ValueError("Unknown pattern modifier {}".format(modifier))
 
     def get_required_keypairs(self, initiator: bool) -> list:
         required = []
@@ -671,9 +641,6 @@ class HandshakeState(object):
                     self.noise_protocol.dh_fn.dh(self.s.private, self.rs.public)
                 )
 
-            elif token == TOKEN_PSK:
-                self.symmetric_state.mix_key_and_hash(self.noise_protocol.psks.pop(0))
-
             else:
                 raise NotImplementedError("Pattern token: {}".format(token))
 
@@ -751,9 +718,6 @@ class HandshakeState(object):
                 self.symmetric_state.mix_key(
                     self.noise_protocol.dh_fn.dh(self.s.private, self.rs.public)
                 )
-
-            elif token == TOKEN_PSK:
-                self.symmetric_state.mix_key_and_hash(self.noise_protocol.psks.pop(0))
 
             else:
                 raise NotImplementedError("Pattern token: {}".format(token))
