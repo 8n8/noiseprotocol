@@ -5,7 +5,6 @@ import abc
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 
 from noise.constants import MAX_MESSAGE_LEN
-from noise.exceptions import NoiseHandshakeError, NoiseInvalidMessage
 from cryptography.hazmat.primitives.asymmetric import x25519
 from noise.constants import (
     TOKEN_S,
@@ -24,6 +23,26 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives import serialization
+
+
+class NoiseValueError(Exception):
+    pass
+
+
+class NoiseHandshakeError(Exception):
+    pass
+
+
+class NoiseInvalidMessage(Exception):
+    pass
+
+
+class NoiseMaxNonceError(Exception):
+    pass
+
+
+class NoiseValidationError(Exception):
+    pass
 
 
 class Pattern(object):
