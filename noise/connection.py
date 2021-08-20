@@ -810,7 +810,7 @@ class NoiseProtocol(object):
                 "or NoiseConnection.set_as_responder"
             )
 
-        for keypair in self.pattern.get_required_keypairs(self.initiator):
+        for keypair in ["s", "rs"]:
             if self.keypairs[keypair] is None:
                 raise RuntimeError(
                     "Keypair {} has to be set for chosen handshake pattern".format(
@@ -987,17 +987,3 @@ class PatternKK(object):
 
     def get_responder_pre_messages(self) -> list:
         return self.pre_messages[1].copy()
-
-    def get_required_keypairs(self, initiator: bool) -> list:
-        required = []
-        if initiator:
-            if self.name[0] in ("K", "X", "I"):
-                required.append("s")
-            if self.one_way or self.name[1] == "K":
-                required.append("rs")
-        else:
-            if self.name[0] == "K":
-                required.append("rs")
-            if self.one_way or self.name[1] in ["K", "X"]:
-                required.append("s")
-        return required
