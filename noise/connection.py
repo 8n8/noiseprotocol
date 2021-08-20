@@ -36,26 +36,6 @@ MAX_MESSAGE_LEN = 65535
 MAX_NONCE = 2 ** 64 - 1
 
 
-class NoiseValueError(Exception):
-    pass
-
-
-class NoiseHandshakeError(Exception):
-    pass
-
-
-class NoiseInvalidMessage(Exception):
-    pass
-
-
-class NoiseMaxNonceError(Exception):
-    pass
-
-
-class NoiseValidationError(Exception):
-    pass
-
-
 class Pattern(object):
     """
     TODO document
@@ -157,7 +137,7 @@ class KeyPair25519(KeyPair):
     @classmethod
     def from_private_bytes(cls, private_bytes):
         if len(private_bytes) != 32:
-            raise NoiseValueError("Invalid length of private_bytes! Should be 32")
+            raise ValueError("Invalid length of private_bytes! Should be 32")
         private = x25519.X25519PrivateKey.from_private_bytes(private_bytes)
         public = private.public_key()
         return cls(
@@ -172,7 +152,7 @@ class KeyPair25519(KeyPair):
     @classmethod
     def from_public_bytes(cls, public_bytes):
         if len(public_bytes) != 32:
-            raise NoiseValueError("Invalid length of public_bytes! Should be 32")
+            raise ValueError("Invalid length of public_bytes! Should be 32")
         public = x25519.X25519PublicKey.from_public_bytes(public_bytes)
         return cls(
             public=public,
@@ -276,7 +256,7 @@ class ED25519(DH):
         if not isinstance(private_key, x25519.X25519PrivateKey) or not isinstance(
             public_key, x25519.X25519PublicKey
         ):
-            raise NoiseValueError(
+            raise TypeError(
                 "Invalid keys! Must be x25519.X25519PrivateKey and x25519.X25519PublicKey instances"
             )
         return private_key.exchange(public_key)
@@ -375,7 +355,7 @@ class CipherState(object):
         :return: ciphertext bytes sequence
         """
         if self.n == MAX_NONCE:
-            raise NoiseMaxNonceError("Nonce has depleted!")
+            raise RuntimeError("Nonce has depleted!")
 
         if not self.has_key():
             return plaintext
@@ -394,7 +374,7 @@ class CipherState(object):
         :return: plaintext bytes sequence
         """
         if self.n == MAX_NONCE:
-            raise NoiseMaxNonceError("Nonce has depleted!")
+            raise RuntimeError("Nonce has depleted!")
 
         if not self.has_key():
             return ciphertext
@@ -913,14 +893,14 @@ class NoiseProtocol(object):
     def validate(self):
 
         if self.initiator is None:
-            raise NoiseValidationError(
+            raise RuntimeError(
                 "You need to set role with NoiseConnection.set_as_initiator "
                 "or NoiseConnection.set_as_responder"
             )
 
         for keypair in self.pattern.get_required_keypairs(self.initiator):
             if self.keypairs[keypair] is None:
-                raise NoiseValidationError(
+                raise RuntimeError(
                     "Keypair {} has to be set for chosen handshake pattern".format(
                         keypair
                     )
@@ -1002,13 +982,11 @@ class NoiseConnection(object):
 
     def write_message(self, payload: bytes = b"") -> bytearray:
         if not self._handshake_started:
-            raise NoiseHandshakeError("Call NoiseConnection.start_handshake first")
+            raise RuntimeError("Call NoiseConnection.start_handshake first")
         if self._next_fn != self.write_message:
-            raise NoiseHandshakeError(
-                "NoiseConnection.read_message has to be called now"
-            )
+            raise RuntimeError("NoiseConnection.read_message has to be called now")
         if self.handshake_finished:
-            raise NoiseHandshakeError(
+            raise RuntimeError(
                 "Handshake finished. NoiseConnection.encrypt should be used now"
             )
         self._next_fn = self.read_message
@@ -1021,13 +999,11 @@ class NoiseConnection(object):
 
     def read_message(self, data: bytes) -> bytearray:
         if not self._handshake_started:
-            raise NoiseHandshakeError("Call NoiseConnection.start_handshake first")
+            raise RuntimeError("Call NoiseConnection.start_handshake first")
         if self._next_fn != self.read_message:
-            raise NoiseHandshakeError(
-                "NoiseConnection.write_message has to be called now"
-            )
+            raise RuntimeError("NoiseConnection.write_message has to be called now")
         if self.handshake_finished:
-            raise NoiseHandshakeError(
+            raise RuntimeError(
                 "Handshake finished. NoiseConnection.decrypt should be used now"
             )
         self._next_fn = self.write_message
@@ -1040,28 +1016,37 @@ class NoiseConnection(object):
 
     def encrypt(self, data: bytes) -> bytes:
         if not self.handshake_finished:
-            raise NoiseHandshakeError("Handshake not finished yet!")
-        if not isinstance(data, bytes) or len(data) > MAX_MESSAGE_LEN:
-            raise NoiseInvalidMessage(
-                "Data must be bytes and less or equal {} bytes in length".format(
+            raise RuntimeError("Handshake not finished yet!")
+        if not isinstance(data, bytes):
+            raise TypeError("Message must be bytes.")
+
+        if len(data) > MAX_MESSAGE_LEN:
+            raise ValueError(
+                "Message must be less than or equal {} bytes in length".format(
                     MAX_MESSAGE_LEN
                 )
             )
+
         return self.noise_protocol.cipher_state_encrypt.encrypt_with_ad(None, data)
 
     def decrypt(self, data: bytes) -> bytes:
         if not self.handshake_finished:
-            raise NoiseHandshakeError("Handshake not finished yet!")
-        if not isinstance(data, bytes) or len(data) > MAX_MESSAGE_LEN:
-            raise NoiseInvalidMessage(
-                "Data must be bytes and less or equal {} bytes in length".format(
+            raise RuntimeError("Handshake not finished yet!")
+
+        if not isinstance(data, bytes):
+            raise TypeError("Message must be bytes.")
+
+        if len(data) > MAX_MESSAGE_LEN:
+            raise ValueError(
+                "Message must be less than or equal {} bytes in length".format(
                     MAX_MESSAGE_LEN
                 )
             )
+
         try:
             return self.noise_protocol.cipher_state_decrypt.decrypt_with_ad(None, data)
         except InvalidTag:
-            raise NoiseInvalidMessage("Failed authentication of message")
+            raise RuntimeError("Failed authentication of message")
 
 
 class PatternKK(Pattern):
