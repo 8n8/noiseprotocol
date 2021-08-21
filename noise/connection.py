@@ -70,25 +70,6 @@ class KeyPair25519(metaclass=abc.ABCMeta):
 
 
 class BLAKE2sHash(metaclass=abc.ABCMeta):
-    @property
-    @abc.abstractmethod
-    def fn(self):
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def hashlen(self):
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def blocklen(self):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def hash(self, data):
-        raise NotImplementedError
-
     def hash(self, data):
         digest = hashes.Hash(self.fn(), cryptography_backend)
         digest.update(data)
