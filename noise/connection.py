@@ -750,18 +750,6 @@ class NoiseConnection(object):
             _keypairs[keypair]
         ] = self.noise_protocol.dh_fn.klass.from_public_bytes(private_bytes)
 
-    def set_keypair_from_private_path(self, keypair: Keypair, path: str):
-        with open(path, "rb") as fd:
-            self.noise_protocol.keypairs[
-                _keypairs[keypair]
-            ] = self.noise_protocol.dh_fn.klass.from_private_bytes(fd.read())
-
-    def set_keypair_from_public_path(self, keypair: Keypair, path: str):
-        with open(path, "rb") as fd:
-            self.noise_protocol.keypairs[
-                _keypairs[keypair]
-            ] = self.noise_protocol.dh_fn.klass.from_public_bytes(fd.read())
-
     def start_handshake(self):
         self.noise_protocol.validate()
         self.noise_protocol.initialise_handshake_state()
