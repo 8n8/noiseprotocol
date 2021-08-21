@@ -792,8 +792,6 @@ class NoiseConnection(object):
     def encrypt(self, data: bytes) -> bytes:
         if not self.handshake_finished:
             raise RuntimeError("Handshake not finished yet!")
-        if not isinstance(data, bytes):
-            raise TypeError("Message must be bytes.")
 
         if len(data) > MAX_MESSAGE_LEN:
             raise ValueError(
@@ -807,9 +805,6 @@ class NoiseConnection(object):
     def decrypt(self, data: bytes) -> bytes:
         if not self.handshake_finished:
             raise RuntimeError("Handshake not finished yet!")
-
-        if not isinstance(data, bytes):
-            raise TypeError("Message must be bytes.")
 
         if len(data) > MAX_MESSAGE_LEN:
             raise ValueError(
