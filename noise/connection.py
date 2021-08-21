@@ -76,10 +76,10 @@ class BLAKE2sHash(metaclass=abc.ABCMeta):
         return partial(hashes.BLAKE2s, digest_size=HASH_LEN)
 
 
-def hmac_hash(key, data, algorithm):
+def hmac_hash(key, data):
     # Applies HMAC using the HASH() function.
-    hmac = HMAC(key=key, algorithm=algorithm())
-    hmac.update(data=data)
+    hmac = HMAC(key, hashes.BLAKE2s(HASH_LEN))
+    hmac.update(data)
     return hmac.finalize()
 
 
@@ -651,7 +651,7 @@ class NoiseProtocol(object):
         # Preinitialized
         self.dh_fn = ED25519()
         self.hash_fn = BLAKE2sHash()
-        self.hmac = partial(self.backend.hmac, algorithm=self.hash_fn.fn)
+        self.hmac = hmac_hash
         self.hkdf = partial(self.backend.hkdf, hmac_hash_fn=self.hmac)
 
         # Initialized where needed
