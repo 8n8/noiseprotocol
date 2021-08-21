@@ -172,7 +172,7 @@ class ED25519(metaclass=abc.ABCMeta):
         return private_key.exchange(public_key)
 
 
-class Cipher(metaclass=abc.ABCMeta):
+class CryptographyCipher(metaclass=abc.ABCMeta):
     def __init__(self):
         self.cipher = None
 
@@ -195,8 +195,6 @@ class Cipher(metaclass=abc.ABCMeta):
     def initialize(self, key):
         self.cipher = self.klass(key)
 
-
-class CryptographyCipher(Cipher, metaclass=abc.ABCMeta):
     def encrypt(self, k, n, ad, plaintext):
         return self.cipher.encrypt(
             nonce=self.format_nonce(n), data=plaintext, associated_data=ad
