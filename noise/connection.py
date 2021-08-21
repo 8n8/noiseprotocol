@@ -612,15 +612,6 @@ def hkdf(chaining_key, input_key_material, num_outputs):
     return output1, output2, output3
 
 
-class DefaultNoiseBackend:
-    """
-    Contains all the crypto methods endorsed by Noise Protocol specification, using Cryptography as backend
-    """
-
-    def __init__(self):
-        self.diffie_hellmans = {"25519": ED25519}
-
-
 class NoiseProtocol(object):
     """
     TODO: Document
@@ -628,7 +619,6 @@ class NoiseProtocol(object):
 
     def __init__(self):
         self.name = b"Noise_KK_25519_ChaChaPoly_BLAKE2s"
-        self.backend = DefaultNoiseBackend()
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         self.pattern = PatternKK()
