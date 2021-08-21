@@ -14,10 +14,6 @@ from cryptography.hazmat.primitives.hmac import HMAC
 from cryptography.hazmat.primitives import serialization
 
 
-class Empty:
-    pass
-
-
 # Handshake pattern tokens
 TOKEN_E = "e"
 TOKEN_S = "s"
@@ -153,7 +149,7 @@ class CipherState(object):
     """
 
     def __init__(self, noise_protocol):
-        self.k = Empty()
+        self.k = None
         self.n = None
         self.cipher = noise_protocol.cipher_class()
 
@@ -172,7 +168,7 @@ class CipherState(object):
 
         :return: True if self.k is not an instance of Empty
         """
-        return not isinstance(self.k, Empty)
+        return self.k is not None
 
     def set_nonce(self, nonce):
         self.n = nonce
@@ -250,7 +246,7 @@ class SymmetricState(object):
 
         # Calls InitializeKey(empty).
         instance.cipher_state = CipherState(noise_protocol)
-        instance.cipher_state.initialize_key(Empty())
+        instance.cipher_state.initialize_key(None)
         noise_protocol.cipher_state_handshake = instance.cipher_state
 
         return instance
@@ -403,10 +399,10 @@ class HandshakeState(object):
 
         # Sets the initiator, s, e, rs, and re variables to the corresponding arguments
         instance.initiator = initiator
-        instance.s = s if s is not None else Empty()
-        instance.e = e if e is not None else Empty()
-        instance.rs = rs if rs is not None else Empty()
-        instance.re = re if re is not None else Empty()
+        instance.s = s
+        instance.e = e
+        instance.rs = rs
+        instance.re = re
 
         # Calls MixHash() once for each public key listed in the pre-messages from handshake_pattern, with the specified
         # public key as input (...). If both initiator and responder have pre-messages, the initiator’s public keys are
@@ -451,7 +447,7 @@ class HandshakeState(object):
                 # Sets e = GENERATE_KEYPAIR(). Appends e.public_key to the buffer. Calls MixHash(e.public_key)
                 self.e = (
                     self.noise_protocol.dh_fn.generate_keypair()
-                    if isinstance(self.e, Empty)
+                    if self.e is None
                     else self.e
                 )
                 message_buffer += self.e.public_bytes
@@ -583,7 +579,7 @@ class HandshakeState(object):
         keypair = getattr(
             self, token
         )  # Maybe explicitly handle exception when getting improper keypair
-        if isinstance(keypair, Empty):
+        if keypair is None:
             raise Exception(
                 "Required keypair {} is empty!".format(token)
             )  # Maybe subclassed exception
@@ -593,7 +589,7 @@ class HandshakeState(object):
         keypair = getattr(
             self, "r" + token
         )  # Maybe explicitly handle exception when getting improper keypair
-        if isinstance(keypair, Empty):
+        if keypair is None:
             raise Exception(
                 "Required keypair {} is empty!".format("r" + token)
             )  # Maybe subclassed exception
@@ -666,11 +662,11 @@ class NoiseProtocol(object):
         self.initiator = None
         self.handshake_hash = None
 
-        self.handshake_state = Empty()
-        self.symmetric_state = Empty()
-        self.cipher_state_handshake = Empty()
-        self.cipher_state_encrypt = Empty()
-        self.cipher_state_decrypt = Empty()
+        self.handshake_state = None
+        self.symmetric_state = None
+        self.cipher_state_handshake = None
+        self.cipher_state_encrypt = None
+        self.cipher_state_decrypt = None
 
         self.keypairs = {"s": None, "e": None, "rs": None, "re": None}
 
