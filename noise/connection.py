@@ -105,18 +105,17 @@ class ChaCha20Cipher(metaclass=abc.ABCMeta):
     def initialize(self, key):
         self.cipher = self.klass(key)
 
-    def encrypt(self, k, n, ad, plaintext):
-        return self.cipher.encrypt(
-            nonce=format_nonce(n), data=plaintext, associated_data=ad
-        )
-
     @property
     def klass(self):
         return ChaCha20Poly1305
 
 
-def decryptChaCha(k, n, ad, ciphertext):
-    return ChaCha20Poly1305(k).decrypt(format_nonce(n), ciphertext, ad)
+def encryptChaCha(k, n, ad, plaintext):
+    return ChaCha20Poly1305(k).encrypt(format_nonce(n), plaintext, ad)
+
+
+def decryptChaCha(k, n, ad, encrypted):
+    return ChaCha20Poly1305(k).decrypt(format_nonce(n), encrypted, ad)
 
 
 def format_nonce(n):
@@ -172,7 +171,7 @@ class CipherState(object):
         if not self.has_key():
             return plaintext
 
-        ciphertext = self.cipher.encrypt(self.k, self.n, ad, plaintext)
+        ciphertext = encryptChaCha(self.k, self.n, ad, plaintext)
         self.n = self.n + 1
         return ciphertext
 
