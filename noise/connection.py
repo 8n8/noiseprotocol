@@ -124,19 +124,6 @@ class ChaCha20Cipher(metaclass=abc.ABCMeta):
     def __init__(self):
         self.cipher = None
 
-    @property
-    @abc.abstractmethod
-    def klass(self):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def encrypt(self, k, n, ad, plaintext):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def decrypt(self, k, n, ad, ciphertext):
-        raise NotImplementedError
-
     def initialize(self, key):
         self.cipher = self.klass(key)
 
@@ -149,10 +136,6 @@ class ChaCha20Cipher(metaclass=abc.ABCMeta):
         return self.cipher.decrypt(
             nonce=self.format_nonce(n), data=ciphertext, associated_data=ad
         )
-
-    @abc.abstractmethod
-    def format_nonce(self, n):
-        raise NotImplementedError
 
     @property
     def klass(self):
