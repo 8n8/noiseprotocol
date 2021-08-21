@@ -622,8 +622,6 @@ class DefaultNoiseBackend:
 
         self.ciphers = {"ChaChaPoly": ChaCha20Cipher}
 
-        self.keypairs = {"25519": KeyPair25519}
-
 
 class NoiseProtocol(object):
     """
