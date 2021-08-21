@@ -537,19 +537,17 @@ class NoiseProtocol(object):
         del self.initiator
 
     def validate(self):
-
         if self.initiator is None:
             raise RuntimeError(
-                "You need to set role with NoiseConnection.set_as_initiator "
-                "or NoiseConnection.set_as_responder"
+                "You need to set role with "
+                "NoiseConnection.set_as_initiator or "
+                "NoiseConnection.set_as_responder"
             )
 
         for keypair in ["s", "rs"]:
             if self.keypairs[keypair] is None:
                 raise RuntimeError(
-                    "Keypair {} has to be set for chosen handshake pattern".format(
-                        keypair
-                    )
+                    f"Keypair {keypair} has to be set for chosen " "handshake pattern"
                 )
 
     def initialise_handshake_state(self):
