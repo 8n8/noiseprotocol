@@ -548,12 +548,6 @@ class HandshakeState(object):
                 message_buffer += self.e.public_bytes
                 self.symmetric_state.mix_hash(self.e.public_bytes)
 
-            elif token == TOKEN_S:
-                # Appends EncryptAndHash(s.public_key) to the buffer
-                message_buffer += self.symmetric_state.encrypt_and_hash(
-                    self.s.public_bytes
-                )
-
             elif token == TOKEN_EE:
                 # Calls MixKey(DH(e, re))
                 self.symmetric_state.mix_key(
