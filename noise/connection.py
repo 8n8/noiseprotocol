@@ -703,8 +703,6 @@ class NoiseProtocol(object):
 
     def initialise_handshake_state(self):
         kwargs = {"initiator": self.initiator}
-        if self.prologue:
-            kwargs["prologue"] = self.prologue
         for keypair, value in self.keypairs.items():
             if value:
                 kwargs[keypair] = value
