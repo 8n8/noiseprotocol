@@ -92,24 +92,6 @@ def hmac_hash(key, data, algorithm):
 
 class ED25519(metaclass=abc.ABCMeta):
     @property
-    @abc.abstractmethod
-    def klass(self):
-        raise NotImplementedError
-
-    @property
-    @abc.abstractmethod
-    def dhlen(self):
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def generate_keypair(self) -> "KeyPair":
-        raise NotImplementedError
-
-    @abc.abstractmethod
-    def dh(self, private_key, public_key) -> bytes:
-        raise NotImplementedError
-
-    @property
     def klass(self):
         return KeyPair25519
 
