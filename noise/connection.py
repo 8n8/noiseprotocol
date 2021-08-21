@@ -189,9 +189,6 @@ class ChaCha20Cipher(metaclass=abc.ABCMeta):
     def decrypt(self, k, n, ad, ciphertext):
         raise NotImplementedError
 
-    def rekey(self, k):
-        return self.encrypt(k, MAX_NONCE, b"", b"\x00" * 32)[:32]
-
     def initialize(self, key):
         self.cipher = self.klass(key)
 
