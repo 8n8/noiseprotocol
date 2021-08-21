@@ -701,12 +701,6 @@ class NoiseProtocol(object):
                     )
                 )
 
-        if self.keypairs["e"] is not None or self.keypairs["re"] is not None:
-            warnings.warn(
-                "One of ephemeral keypairs is already set. "
-                "This is OK for testing, but should NEVER happen in production!"
-            )
-
     def initialise_handshake_state(self):
         kwargs = {"initiator": self.initiator}
         if self.prologue:
