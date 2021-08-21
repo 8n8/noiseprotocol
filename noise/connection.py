@@ -69,6 +69,9 @@ class KeyPair25519(metaclass=abc.ABCMeta):
         )
 
 
+HASH_LEN = 32
+
+
 class BLAKE2sHash(metaclass=abc.ABCMeta):
     def hash(self, data):
         digest = hashes.Hash(self.fn(), cryptography_backend)
@@ -77,15 +80,7 @@ class BLAKE2sHash(metaclass=abc.ABCMeta):
 
     @property
     def fn(self):
-        return partial(hashes.BLAKE2s, digest_size=self.hashlen)
-
-    @property
-    def hashlen(self):
-        return 32
-
-    @property
-    def blocklen(self):
-        return 64
+        return partial(hashes.BLAKE2s, digest_size=HASH_LEN)
 
 
 def hmac_hash(key, data, algorithm):
@@ -292,7 +287,7 @@ class SymmetricState(object):
 
         # If protocol_name is less than or equal to HASHLEN bytes in length, sets h equal to protocol_name with zero
         # bytes appended to make HASHLEN bytes. Otherwise sets h = HASH(protocol_name).
-        if len(noise_protocol.name) <= noise_protocol.hash_fn.hashlen:
+        if len(noise_protocol.name) <= HASH_LEN:
             instance.h = noise_protocol.name.ljust(
                 noise_protocol.hash_fn.hashlen, b"\0"
             )
@@ -317,9 +312,6 @@ class SymmetricState(object):
         """
         # Sets ck, temp_k = HKDF(ck, input_key_material, 2).
         self.ck, temp_k = self.noise_protocol.hkdf(self.ck, input_key_material, 2)
-        # If HASHLEN is 64, then truncates temp_k to 32 bytes.
-        if self.noise_protocol.hash_fn.hashlen == 64:
-            temp_k = temp_k[:32]
 
         # Calls InitializeKey(temp_k).
         self.cipher_state.initialize_key(temp_k)
@@ -380,11 +372,6 @@ class SymmetricState(object):
         """
         # Sets temp_k1, temp_k2 = HKDF(ck, b'', 2).
         temp_k1, temp_k2 = self.noise_protocol.hkdf(self.ck, b"", 2)
-
-        # If HASHLEN is 64, then truncates temp_k1 and temp_k2 to 32 bytes.
-        if self.noise_protocol.hash_fn.hashlen == 64:
-            temp_k1 = temp_k1[:32]
-            temp_k2 = temp_k2[:32]
 
         # Creates two new CipherState objects c1 and c2.
         # Calls c1.InitializeKey(temp_k1) and c2.InitializeKey(temp_k2).
