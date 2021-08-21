@@ -172,7 +172,7 @@ class ED25519(metaclass=abc.ABCMeta):
         return private_key.exchange(public_key)
 
 
-class CryptographyCipher(metaclass=abc.ABCMeta):
+class ChaCha20Cipher(metaclass=abc.ABCMeta):
     def __init__(self):
         self.cipher = None
 
@@ -209,8 +209,6 @@ class CryptographyCipher(metaclass=abc.ABCMeta):
     def format_nonce(self, n):
         raise NotImplementedError
 
-
-class ChaCha20Cipher(CryptographyCipher):
     @property
     def klass(self):
         return ChaCha20Poly1305
