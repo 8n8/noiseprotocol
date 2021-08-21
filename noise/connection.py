@@ -31,9 +31,6 @@ MAX_MESSAGE_LEN = 65535
 MAX_NONCE = 2 ** 64 - 1
 
 
-cryptography_backend = default_backend()
-
-
 class KeyPair25519(metaclass=abc.ABCMeta):
     def __init__(self, private=None, public=None, public_bytes=None):
         self.private = private
@@ -74,7 +71,7 @@ HASH_LEN = 32
 
 class BLAKE2sHash(metaclass=abc.ABCMeta):
     def hash(self, data):
-        digest = hashes.Hash(self.fn(), cryptography_backend)
+        digest = hashes.Hash(self.fn())
         digest.update(data)
         return digest.finalize()
 
@@ -85,7 +82,7 @@ class BLAKE2sHash(metaclass=abc.ABCMeta):
 
 def hmac_hash(key, data, algorithm):
     # Applies HMAC using the HASH() function.
-    hmac = HMAC(key=key, algorithm=algorithm(), backend=cryptography_backend)
+    hmac = HMAC(key=key, algorithm=algorithm())
     hmac.update(data=data)
     return hmac.finalize()
 
