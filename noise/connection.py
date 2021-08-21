@@ -65,15 +65,10 @@ class KeyPair25519(metaclass=abc.ABCMeta):
 HASH_LEN = 32
 
 
-class BLAKE2sHash(metaclass=abc.ABCMeta):
-    def hash(self, data):
-        digest = hashes.Hash(self.fn())
-        digest.update(data)
-        return digest.finalize()
-
-    @property
-    def fn(self):
-        return partial(hashes.BLAKE2s, digest_size=HASH_LEN)
+def hash(x):
+    digest = hashes.Hash(hashes.BLAKE2s(HASH_LEN))
+    digest.update(x)
+    return digest.finalize()
 
 
 def hmac_hash(key, data):
@@ -239,7 +234,7 @@ class SymmetricState(object):
         instance = cls()
         instance.noise_protocol = noise_protocol
 
-        instance.h = noise_protocol.hash_fn.hash(noise_protocol.name)
+        instance.h = hash(noise_protocol.name)
 
         # Sets ck = h.
         instance.ck = instance.h
@@ -269,7 +264,7 @@ class SymmetricState(object):
 
         :param data: bytes sequence
         """
-        self.h = self.noise_protocol.hash_fn.hash(self.h + data)
+        self.h = hash(self.h + data)
 
     def mix_key_and_hash(self, input_key_material: bytes):
         # Sets ck, temp_h, temp_k = HKDF(ck, input_key_material, 3).
@@ -627,8 +622,6 @@ class DefaultNoiseBackend:
 
         self.ciphers = {"ChaChaPoly": ChaCha20Cipher}
 
-        self.hashes = {"BLAKE2s": BLAKE2sHash}
-
         self.keypairs = {"25519": KeyPair25519}
 
         self.hmac = hmac_hash
@@ -650,7 +643,6 @@ class NoiseProtocol(object):
 
         # Preinitialized
         self.dh_fn = ED25519()
-        self.hash_fn = BLAKE2sHash()
         self.hmac = hmac_hash
         self.hkdf = hkdf
 
@@ -678,7 +670,6 @@ class NoiseProtocol(object):
         del self.prologue
         del self.initiator
         del self.dh_fn
-        del self.hash_fn
         del self.keypair_class
 
     def validate(self):
