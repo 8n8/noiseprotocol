@@ -98,18 +98,6 @@ class ED25519(metaclass=abc.ABCMeta):
         )
 
 
-class ChaCha20Cipher(metaclass=abc.ABCMeta):
-    def __init__(self):
-        self.cipher = None
-
-    def initialize(self, key):
-        self.cipher = self.klass(key)
-
-    @property
-    def klass(self):
-        return ChaCha20Poly1305
-
-
 def encryptChaCha(k, n, ad, plaintext):
     return ChaCha20Poly1305(k).encrypt(format_nonce(n), plaintext, ad)
 
@@ -135,7 +123,6 @@ class CipherState(object):
     def __init__(self, noise_protocol):
         self.k = None
         self.n = None
-        self.cipher = noise_protocol.cipher_class()
 
     def initialize_key(self, key):
         """
@@ -144,8 +131,6 @@ class CipherState(object):
         """
         self.k = key
         self.n = 0
-        if self.has_key():
-            self.cipher.initialize(key)
 
     def has_key(self):
         """
@@ -591,7 +576,6 @@ class NoiseProtocol(object):
         self.hkdf = hkdf
 
         # Initialized where needed
-        self.cipher_class = ChaCha20Cipher
         self.keypair_class = KeyPair25519
 
         self.prologue = None
