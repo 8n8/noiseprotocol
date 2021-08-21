@@ -78,14 +78,13 @@ def hmac_hash(key, data):
     return hmac.finalize()
 
 
+DHLEN = 32
+
+
 class ED25519(metaclass=abc.ABCMeta):
     @property
     def klass(self):
         return KeyPair25519
-
-    @property
-    def dhlen(self):
-        return 32
 
     def generate_keypair(self) -> "KeyPair":
         private_key = x25519.X25519PrivateKey.generate()
@@ -502,29 +501,15 @@ class HandshakeState(object):
         """
         # Fetches and deletes the next message pattern from message_patterns, then sequentially processes each token
         # from the message pattern
-        dhlen = self.noise_protocol.dh_fn.dhlen
         message_pattern = self.message_patterns.pop(0)
         for token in message_pattern:
             if token == TOKEN_E:
                 # Sets re to the next DHLEN bytes from the message. Calls MixHash(re.public_key).
                 self.re = self.noise_protocol.keypair_class.from_public_bytes(
-                    bytes(message[:dhlen])
+                    bytes(message[:DHLEN])
                 )
-                message = message[dhlen:]
+                message = message[DHLEN:]
                 self.symmetric_state.mix_hash(self.re.public_bytes)
-
-            elif token == TOKEN_S:
-                # Sets temp to the next DHLEN + 16 bytes of the message if HasKey() == True, or to the next DHLEN bytes
-                # otherwise. Sets rs to DecryptAndHash(temp).
-                if self.noise_protocol.cipher_state_handshake.has_key():
-                    temp = bytes(message[: dhlen + 16])
-                    message = message[dhlen + 16 :]
-                else:
-                    temp = bytes(message[:dhlen])
-                    message = message[dhlen:]
-                self.rs = self.noise_protocol.keypair_class.from_public_bytes(
-                    self.symmetric_state.decrypt_and_hash(temp)
-                )
 
             elif token == TOKEN_EE:
                 # Calls MixKey(DH(e, re)).
