@@ -98,11 +98,11 @@ class ED25519(metaclass=abc.ABCMeta):
         )
 
 
-def encryptChaCha(k, n, ad, plaintext):
+def encrypt_chacha(k, n, ad, plaintext):
     return ChaCha20Poly1305(k).encrypt(format_nonce(n), plaintext, ad)
 
 
-def decryptChaCha(k, n, ad, encrypted):
+def decrypt_chacha(k, n, ad, encrypted):
     return ChaCha20Poly1305(k).decrypt(format_nonce(n), encrypted, ad)
 
 
@@ -156,7 +156,7 @@ class CipherState(object):
         if not self.has_key():
             return plaintext
 
-        ciphertext = encryptChaCha(self.k, self.n, ad, plaintext)
+        ciphertext = encrypt_chacha(self.k, self.n, ad, plaintext)
         self.n = self.n + 1
         return ciphertext
 
@@ -175,7 +175,7 @@ class CipherState(object):
         if not self.has_key():
             return ciphertext
 
-        plaintext = decryptChaCha(self.k, self.n, ad, ciphertext)
+        plaintext = decrypt_chacha(self.k, self.n, ad, ciphertext)
         self.n = self.n + 1
         return plaintext
 
