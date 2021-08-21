@@ -183,12 +183,11 @@ class SymmetricState(object):
 
     def mix_key(self, input_key_material: bytes):
         """
-
         :param input_key_material:
         :return:
         """
         # Sets ck, temp_k = HKDF(ck, input_key_material, 2).
-        self.ck, temp_k = self.noise_protocol.hkdf(self.ck, input_key_material, 2)
+        self.ck, temp_k = hkdf(self.ck, input_key_material, 2)
 
         # Calls InitializeKey(temp_k).
         self.cipher_state.initialize_key(temp_k)
@@ -248,7 +247,7 @@ class SymmetricState(object):
         :return: tuple (CipherState, CipherState)
         """
         # Sets temp_k1, temp_k2 = HKDF(ck, b'', 2).
-        temp_k1, temp_k2 = self.noise_protocol.hkdf(self.ck, b"", 2)
+        temp_k1, temp_k2 = hkdf(self.ck, b"", 2)
 
         # Creates two new CipherState objects c1 and c2.
         # Calls c1.InitializeKey(temp_k1) and c2.InitializeKey(temp_k2).
@@ -520,7 +519,6 @@ class NoiseProtocol(object):
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         # Preinitialized
         self.hmac = hmac_hash
-        self.hkdf = hkdf
 
         self.prologue = None
         self.initiator = None
