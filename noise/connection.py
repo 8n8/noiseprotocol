@@ -97,15 +97,6 @@ class ED25519(metaclass=abc.ABCMeta):
             ),
         )
 
-    def dh(self, private_key, public_key) -> bytes:
-        if not isinstance(private_key, x25519.X25519PrivateKey) or not isinstance(
-            public_key, x25519.X25519PublicKey
-        ):
-            raise TypeError(
-                "Invalid keys! Must be x25519.X25519PrivateKey and x25519.X25519PublicKey instances"
-            )
-        return private_key.exchange(public_key)
-
 
 class ChaCha20Cipher(metaclass=abc.ABCMeta):
     def __init__(self):
@@ -449,15 +440,13 @@ class HandshakeState(object):
 
             elif token == TOKEN_EE:
                 # Calls MixKey(DH(e, re))
-                self.symmetric_state.mix_key(
-                    self.noise_protocol.dh_fn.dh(self.e.private, self.re.public)
-                )
+                self.symmetric_state.mix_key(self.e.private.exchange(self.re.public))
 
             elif token == TOKEN_ES:
                 # Calls MixKey(DH(e, rs)) if initiator, MixKey(DH(s, re)) if responder
                 if self.initiator:
                     self.symmetric_state.mix_key(
-                        self.noise_protocol.dh_fn.dh(self.e.private, self.rs.public)
+                        self.e.private.exchange(self.rs.public)
                     )
                 else:
                     self.symmetric_state.mix_key(
@@ -472,14 +461,12 @@ class HandshakeState(object):
                     )
                 else:
                     self.symmetric_state.mix_key(
-                        self.noise_protocol.dh_fn.dh(self.e.private, self.rs.public)
+                        self.e.private.exchange(self.rs.public)
                     )
 
             elif token == TOKEN_SS:
                 # Calls MixKey(DH(s, rs))
-                self.symmetric_state.mix_key(
-                    self.noise_protocol.dh_fn.dh(self.s.private, self.rs.public)
-                )
+                self.symmetric_state.mix_key(self.s.private.exchange(self.rs.public))
 
             else:
                 raise NotImplementedError("Pattern token: {}".format(token))
@@ -513,9 +500,7 @@ class HandshakeState(object):
 
             elif token == TOKEN_EE:
                 # Calls MixKey(DH(e, re)).
-                self.symmetric_state.mix_key(
-                    self.noise_protocol.dh_fn.dh(self.e.private, self.re.public)
-                )
+                self.symmetric_state.mix_key(self.e.private.exchange(self.re.public))
 
             elif token == TOKEN_ES:
                 # Calls MixKey(DH(e, rs)) if initiator, MixKey(DH(s, re)) if responder
@@ -525,14 +510,14 @@ class HandshakeState(object):
                     )
                 else:
                     self.symmetric_state.mix_key(
-                        self.noise_protocol.dh_fn.dh(self.s.private, self.re.public)
+                        self.s.private.exchange(self.re.public)
                     )
 
             elif token == TOKEN_SE:
                 # Calls MixKey(DH(s, re)) if initiator, MixKey(DH(e, rs)) if responder
                 if self.initiator:
                     self.symmetric_state.mix_key(
-                        self.noise_protocol.dh_fn.dh(self.s.private, self.re.public)
+                        self.s.private.exchange(self.re.public)
                     )
                 else:
                     self.symmetric_state.mix_key(
@@ -541,9 +526,7 @@ class HandshakeState(object):
 
             elif token == TOKEN_SS:
                 # Calls MixKey(DH(s, rs))
-                self.symmetric_state.mix_key(
-                    self.noise_protocol.dh_fn.dh(self.s.private, self.rs.public)
-                )
+                self.symmetric_state.mix_key(self.s.private.exchange(self.rs.public))
 
             else:
                 raise NotImplementedError("Pattern token: {}".format(token))
