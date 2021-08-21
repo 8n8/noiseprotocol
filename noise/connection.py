@@ -27,39 +27,37 @@ MAX_MESSAGE_LEN = 65535
 MAX_NONCE = 2 ** 64 - 1
 
 
-class KeyPair25519(metaclass=abc.ABCMeta):
-    def __init__(self, private=None, public=None, public_bytes=None):
-        self.private = private
-        self.public = public
-        self.public_bytes = public_bytes
+def from_private_bytes(private_bytes):
+    if len(private_bytes) != 32:
+        raise ValueError("Invalid length of private_bytes! Should be 32")
+    return x25519.X25519PrivateKey.from_private_bytes(private_bytes)
 
-    @classmethod
-    def from_private_bytes(cls, private_bytes):
-        if len(private_bytes) != 32:
-            raise ValueError("Invalid length of private_bytes! Should be 32")
-        private = x25519.X25519PrivateKey.from_private_bytes(private_bytes)
-        public = private.public_key()
-        return cls(
-            private=private,
-            public=public,
-            public_bytes=public.public_bytes(
-                encoding=serialization.Encoding.Raw,
-                format=serialization.PublicFormat.Raw,
-            ),
-        )
+    # public = private.public_key()
+    # return cls(
+    #     private=private,
+    #     public=public,
+    #     public_bytes=public.public_bytes(
+    #         encoding=serialization.Encoding.Raw,
+    #         format=serialization.PublicFormat.Raw,
+    #     ),
+    # )
 
-    @classmethod
-    def from_public_bytes(cls, public_bytes):
-        if len(public_bytes) != 32:
-            raise ValueError("Invalid length of public_bytes! Should be 32")
-        public = x25519.X25519PublicKey.from_public_bytes(public_bytes)
-        return cls(
-            public=public,
-            public_bytes=public.public_bytes(
-                encoding=serialization.Encoding.Raw,
-                format=serialization.PublicFormat.Raw,
-            ),
-        )
+
+def get_public_bytes(key):
+    try:
+        key = key.public_key()
+    except AttributeError:
+        pass
+
+    return key.public_bytes(
+        encoding=serialization.Encoding.Raw, format=serialization.PublicFormat.Raw
+    )
+
+
+def from_public_bytes(public_bytes):
+    if len(public_bytes) != 32:
+        raise ValueError("Invalid length of public_bytes! Should be 32")
+    return x25519.X25519PublicKey.from_public_bytes(public_bytes)
 
 
 HASH_LEN = 32
@@ -79,23 +77,6 @@ def hmac_hash(key, data):
 
 
 DHLEN = 32
-
-
-class ED25519(metaclass=abc.ABCMeta):
-    @property
-    def klass(self):
-        return KeyPair25519
-
-    def generate_keypair(self) -> "KeyPair":
-        private_key = x25519.X25519PrivateKey.generate()
-        public_key = private_key.public_key()
-        return KeyPair25519(
-            private_key,
-            public_key,
-            public_key.public_bytes(
-                serialization.Encoding.Raw, serialization.PublicFormat.Raw
-            ),
-        )
 
 
 def encrypt_chacha(k, n, ad, plaintext):
@@ -383,9 +364,9 @@ class HandshakeState(object):
             instance._get_remote_keypair if initiator else instance._get_local_keypair
         )
         for keypair in map(initiator_keypair_getter, [TOKEN_S]):
-            instance.symmetric_state.mix_hash(keypair.public_bytes)
+            instance.symmetric_state.mix_hash(get_public_bytes(keypair))
         for keypair in map(responder_keypair_getter, [TOKEN_S]):
-            instance.symmetric_state.mix_hash(keypair.public_bytes)
+            instance.symmetric_state.mix_hash(get_public_bytes(keypair))
 
         # Sets message_patterns to the message patterns from handshake_pattern
         instance.message_patterns = [
@@ -416,19 +397,17 @@ class HandshakeState(object):
                     if self.e is None
                     else self.e
                 )
-                message_buffer += self.e.public_bytes
-                self.symmetric_state.mix_hash(self.e.public_bytes)
+                message_buffer += get_public_bytes(self.e)
+                self.symmetric_state.mix_hash(get_public_bytes(self.e))
 
             elif token == TOKEN_EE:
                 # Calls MixKey(DH(e, re))
-                self.symmetric_state.mix_key(self.e.private.exchange(self.re.public))
+                self.symmetric_state.mix_key(self.e.exchange(self.re))
 
             elif token == TOKEN_ES:
                 # Calls MixKey(DH(e, rs)) if initiator, MixKey(DH(s, re)) if responder
                 if self.initiator:
-                    self.symmetric_state.mix_key(
-                        self.e.private.exchange(self.rs.public)
-                    )
+                    self.symmetric_state.mix_key(self.e.exchange(self.rs))
                 else:
                     self.symmetric_state.mix_key(
                         self.noise_protocol.dh_fn.dh(self.s.private, self.re.public)
@@ -441,13 +420,11 @@ class HandshakeState(object):
                         self.noise_protocol.dh_fn.dh(self.s.private, self.re.public)
                     )
                 else:
-                    self.symmetric_state.mix_key(
-                        self.e.private.exchange(self.rs.public)
-                    )
+                    self.symmetric_state.mix_key(self.e.exchange(self.rs))
 
             elif token == TOKEN_SS:
                 # Calls MixKey(DH(s, rs))
-                self.symmetric_state.mix_key(self.s.private.exchange(self.rs.public))
+                self.symmetric_state.mix_key(self.s.exchange(self.rs))
 
             else:
                 raise NotImplementedError("Pattern token: {}".format(token))
@@ -471,43 +448,34 @@ class HandshakeState(object):
         # from the message pattern
         message_pattern = self.message_patterns.pop(0)
         for token in message_pattern:
+            print(token)
             if token == TOKEN_E:
                 # Sets re to the next DHLEN bytes from the message. Calls MixHash(re.public_key).
-                self.re = self.noise_protocol.keypair_class.from_public_bytes(
-                    bytes(message[:DHLEN])
-                )
+                self.re = from_public_bytes(bytes(message[:DHLEN]))
                 message = message[DHLEN:]
-                self.symmetric_state.mix_hash(self.re.public_bytes)
+                self.symmetric_state.mix_hash(get_public_bytes(self.re))
 
             elif token == TOKEN_EE:
                 # Calls MixKey(DH(e, re)).
-                self.symmetric_state.mix_key(self.e.private.exchange(self.re.public))
+                self.symmetric_state.mix_key(self.e.exchange(self.re))
 
             elif token == TOKEN_ES:
                 # Calls MixKey(DH(e, rs)) if initiator, MixKey(DH(s, re)) if responder
                 if self.initiator:
-                    self.symmetric_state.mix_key(
-                        self.e.private.exchange(self.rs.public)
-                    )
+                    self.symmetric_state.mix_key(self.e.exchange(self.rs))
                 else:
-                    self.symmetric_state.mix_key(
-                        self.s.private.exchange(self.re.public)
-                    )
+                    self.symmetric_state.mix_key(self.s.exchange(self.re))
 
             elif token == TOKEN_SE:
                 # Calls MixKey(DH(s, re)) if initiator, MixKey(DH(e, rs)) if responder
                 if self.initiator:
-                    self.symmetric_state.mix_key(
-                        self.s.private.exchange(self.re.public)
-                    )
+                    self.symmetric_state.mix_key(self.s.exchange(self.re))
                 else:
-                    self.symmetric_state.mix_key(
-                        self.noise_protocol.dh_fn.dh(self.e.private, self.rs.public)
-                    )
+                    self.symmetric_state.mix_key(self.e.exchange(self.rs))
 
             elif token == TOKEN_SS:
                 # Calls MixKey(DH(s, rs))
-                self.symmetric_state.mix_key(self.s.private.exchange(self.rs.public))
+                self.symmetric_state.mix_key(self.s.exchange(self.rs))
 
             else:
                 raise NotImplementedError("Pattern token: {}".format(token))
@@ -571,12 +539,8 @@ class NoiseProtocol(object):
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         # Preinitialized
-        self.dh_fn = ED25519()
         self.hmac = hmac_hash
         self.hkdf = hkdf
-
-        # Initialized where needed
-        self.keypair_class = KeyPair25519
 
         self.prologue = None
         self.initiator = None
@@ -597,8 +561,6 @@ class NoiseProtocol(object):
         del self.cipher_state_handshake
         del self.prologue
         del self.initiator
-        del self.dh_fn
-        del self.keypair_class
 
     def validate(self):
 
@@ -656,14 +618,14 @@ class NoiseConnection(object):
         self._next_fn = self.read_message
 
     def set_keypair_from_private_bytes(self, keypair: Keypair, private_bytes: bytes):
-        self.noise_protocol.keypairs[
-            _keypairs[keypair]
-        ] = self.noise_protocol.dh_fn.klass.from_private_bytes(private_bytes)
+        self.noise_protocol.keypairs[_keypairs[keypair]] = from_private_bytes(
+            private_bytes
+        )
 
     def set_keypair_from_public_bytes(self, keypair: Keypair, private_bytes: bytes):
-        self.noise_protocol.keypairs[
-            _keypairs[keypair]
-        ] = self.noise_protocol.dh_fn.klass.from_public_bytes(private_bytes)
+        self.noise_protocol.keypairs[_keypairs[keypair]] = from_public_bytes(
+            private_bytes
+        )
 
     def start_handshake(self):
         self.noise_protocol.validate()
