@@ -246,14 +246,7 @@ class SymmetricState(object):
         instance = cls()
         instance.noise_protocol = noise_protocol
 
-        # If protocol_name is less than or equal to HASHLEN bytes in length, sets h equal to protocol_name with zero
-        # bytes appended to make HASHLEN bytes. Otherwise sets h = HASH(protocol_name).
-        if len(noise_protocol.name) <= HASH_LEN:
-            instance.h = noise_protocol.name.ljust(
-                noise_protocol.hash_fn.hashlen, b"\0"
-            )
-        else:
-            instance.h = noise_protocol.hash_fn.hash(noise_protocol.name)
+        instance.h = noise_protocol.hash_fn.hash(noise_protocol.name)
 
         # Sets ck = h.
         instance.ck = instance.h
