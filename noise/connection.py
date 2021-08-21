@@ -675,11 +675,6 @@ class NoiseProtocol(object):
         self.keypairs = {"s": None, "e": None, "rs": None, "re": None}
 
     def handshake_done(self):
-        if self.pattern.one_way:
-            if self.initiator:
-                self.cipher_state_decrypt = None
-            else:
-                self.cipher_state_encrypt = None
         self.handshake_hash = self.symmetric_state.get_handshake_hash()
         del self.handshake_state
         del self.symmetric_state
