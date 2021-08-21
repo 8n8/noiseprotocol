@@ -624,10 +624,6 @@ class DefaultNoiseBackend:
 
         self.keypairs = {"25519": KeyPair25519}
 
-        self.hmac = hmac_hash
-
-        self.hkdf = hkdf
-
 
 class NoiseProtocol(object):
     """
