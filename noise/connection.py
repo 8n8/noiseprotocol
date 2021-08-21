@@ -398,19 +398,16 @@ class HandshakeState(object):
         responder_keypair_getter = (
             instance._get_remote_keypair if initiator else instance._get_local_keypair
         )
-        for keypair in map(
-            initiator_keypair_getter,
-            noise_protocol.pattern.get_initiator_pre_messages(),
-        ):
+        for keypair in map(initiator_keypair_getter, [TOKEN_S]):
             instance.symmetric_state.mix_hash(keypair.public_bytes)
-        for keypair in map(
-            responder_keypair_getter,
-            noise_protocol.pattern.get_responder_pre_messages(),
-        ):
+        for keypair in map(responder_keypair_getter, [TOKEN_S]):
             instance.symmetric_state.mix_hash(keypair.public_bytes)
 
         # Sets message_patterns to the message patterns from handshake_pattern
-        instance.message_patterns = noise_protocol.pattern.tokens.copy()
+        instance.message_patterns = [
+            [TOKEN_E, TOKEN_ES, TOKEN_SS],
+            [TOKEN_E, TOKEN_EE, TOKEN_SE],
+        ]
 
         return instance
 
@@ -589,8 +586,6 @@ class NoiseProtocol(object):
         self.name = b"Noise_KK_25519_ChaChaPoly_BLAKE2s"
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
-        self.pattern = PatternKK()
-
         # Preinitialized
         self.dh_fn = ED25519()
         self.hmac = hmac_hash
@@ -754,31 +749,3 @@ class NoiseConnection(object):
             return self.noise_protocol.cipher_state_decrypt.decrypt_with_ad(None, data)
         except InvalidTag:
             raise RuntimeError("Failed authentication of message")
-
-
-class PatternKK(object):
-    def __init__(self):
-        # As per specification, if both parties have pre-messages, the initiator is listed first. To reduce complexity,
-        # pre_messages shall be a list of two lists:
-        # the first for the initiator's pre-messages, the second for the responder
-        self.pre_messages = [[], []]
-
-        # List of lists of valid tokens, alternating between tokens for initiator and responder
-        self.tokens = []
-
-        self.name = ""
-        self.one_way = False
-        self.psk_count = 0
-        self.name = "KK"
-
-        self.pre_messages = [[TOKEN_S], [TOKEN_S]]
-        self.tokens = [[TOKEN_E, TOKEN_ES, TOKEN_SS], [TOKEN_E, TOKEN_EE, TOKEN_SE]]
-
-    def has_pre_messages(self):
-        return any(map(lambda x: len(x) > 0, self.pre_messages))
-
-    def get_initiator_pre_messages(self) -> list:
-        return self.pre_messages[0].copy()
-
-    def get_responder_pre_messages(self) -> list:
-        return self.pre_messages[1].copy()

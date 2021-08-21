@@ -140,19 +140,12 @@ class TestVectors(object):
                         initiator.noise_protocol.cipher_state_encrypt.k
                         == responder.noise_protocol.cipher_state_decrypt.k
                     )
-                    if not initiator.noise_protocol.pattern.one_way:
-                        assert (
-                            initiator.noise_protocol.cipher_state_decrypt.k
-                            == responder.noise_protocol.cipher_state_encrypt.k
-                        )
-                    else:
-                        assert (
-                            initiator.noise_protocol.cipher_state_decrypt
-                            is responder.noise_protocol.cipher_state_encrypt
-                            is None
-                        )
+                    assert (
+                        initiator.noise_protocol.cipher_state_decrypt.k
+                        == responder.noise_protocol.cipher_state_encrypt.k
+                    )
             else:
-                if initiator.noise_protocol.pattern.one_way or initiator_to_responder:
+                if initiator_to_responder:
                     sender, receiver = initiator, responder
                 else:
                     sender, receiver = responder, initiator
