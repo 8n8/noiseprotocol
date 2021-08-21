@@ -518,8 +518,6 @@ class NoiseProtocol(object):
 
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         # Preinitialized
-        self.hmac = hmac_hash
-
         self.prologue = None
         self.initiator = None
         self.handshake_hash = None
