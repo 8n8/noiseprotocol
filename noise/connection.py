@@ -509,10 +509,6 @@ def hkdf(chaining_key, input_key_material, num_outputs):
 
 
 class NoiseProtocol(object):
-    """
-    TODO: Document
-    """
-
     def __init__(self):
         self.name = b"Noise_KK_25519_ChaChaPoly_BLAKE2s"
 
