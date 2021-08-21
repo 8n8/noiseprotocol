@@ -79,7 +79,7 @@ class KeyPair25519(metaclass=abc.ABCMeta):
         )
 
 
-class Hash(metaclass=abc.ABCMeta):
+class CryptographyHash(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def fn(self):
@@ -99,8 +99,6 @@ class Hash(metaclass=abc.ABCMeta):
     def hash(self, data):
         raise NotImplementedError
 
-
-class CryptographyHash(Hash, metaclass=abc.ABCMeta):
     def hash(self, data):
         digest = hashes.Hash(self.fn(), cryptography_backend)
         digest.update(data)
