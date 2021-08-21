@@ -506,7 +506,7 @@ class HandshakeState(object):
                 # Calls MixKey(DH(e, rs)) if initiator, MixKey(DH(s, re)) if responder
                 if self.initiator:
                     self.symmetric_state.mix_key(
-                        self.noise_protocol.dh_fn.dh(self.e.private, self.rs.public)
+                        self.e.private.exchange(self.rs.public)
                     )
                 else:
                     self.symmetric_state.mix_key(
