@@ -79,7 +79,7 @@ class KeyPair25519(metaclass=abc.ABCMeta):
         )
 
 
-class CryptographyHash(metaclass=abc.ABCMeta):
+class BLAKE2sHash(metaclass=abc.ABCMeta):
     @property
     @abc.abstractmethod
     def fn(self):
@@ -104,8 +104,6 @@ class CryptographyHash(metaclass=abc.ABCMeta):
         digest.update(data)
         return digest.finalize()
 
-
-class BLAKE2sHash(CryptographyHash):
     @property
     def fn(self):
         return partial(hashes.BLAKE2s, digest_size=self.hashlen)
