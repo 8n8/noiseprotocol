@@ -217,10 +217,6 @@ class CipherState(object):
         self.n = self.n + 1
         return plaintext
 
-    def rekey(self):
-        self.k = self.cipher.rekey(self.k)
-        self.cipher.initialize(self.k)
-
 
 class SymmetricState(object):
     """
