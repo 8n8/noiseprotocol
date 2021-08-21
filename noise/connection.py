@@ -32,16 +32,6 @@ def from_private_bytes(private_bytes):
         raise ValueError("Invalid length of private_bytes! Should be 32")
     return x25519.X25519PrivateKey.from_private_bytes(private_bytes)
 
-    # public = private.public_key()
-    # return cls(
-    #     private=private,
-    #     public=public,
-    #     public_bytes=public.public_bytes(
-    #         encoding=serialization.Encoding.Raw,
-    #         format=serialization.PublicFormat.Raw,
-    #     ),
-    # )
-
 
 def get_public_bytes(key):
     try:
@@ -113,16 +103,6 @@ class CipherState(object):
         self.k = key
         self.n = 0
 
-    def has_key(self):
-        """
-
-        :return: True if self.k is not an instance of Empty
-        """
-        return self.k is not None
-
-    def set_nonce(self, nonce):
-        self.n = nonce
-
     def encrypt_with_ad(self, ad: bytes, plaintext: bytes) -> bytes:
         """
         If k is non-empty returns ENCRYPT(k, n++, ad, plaintext). Otherwise returns plaintext.
@@ -134,7 +114,7 @@ class CipherState(object):
         if self.n == MAX_NONCE:
             raise RuntimeError("Nonce has depleted!")
 
-        if not self.has_key():
+        if self.k is None:
             return plaintext
 
         ciphertext = encrypt_chacha(self.k, self.n, ad, plaintext)
@@ -153,7 +133,7 @@ class CipherState(object):
         if self.n == MAX_NONCE:
             raise RuntimeError("Nonce has depleted!")
 
-        if not self.has_key():
+        if self.k is None:
             return ciphertext
 
         plaintext = decrypt_chacha(self.k, self.n, ad, ciphertext)
