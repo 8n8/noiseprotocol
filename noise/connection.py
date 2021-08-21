@@ -620,8 +620,6 @@ class DefaultNoiseBackend:
     def __init__(self):
         self.diffie_hellmans = {"25519": ED25519}
 
-        self.ciphers = {"ChaChaPoly": ChaCha20Cipher}
-
 
 class NoiseProtocol(object):
     """
