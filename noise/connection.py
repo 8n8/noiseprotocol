@@ -81,64 +81,45 @@ def format_nonce(n):
     return b"\x00\x00\x00\x00" + n.to_bytes(length=8, byteorder="little")
 
 
-class CipherState(object):
+def initialize_key(key):
+    return {"k": key, "n": 0}
+
+
+def encrypt_with_ad(k, n, ad: bytes, plaintext: bytes) -> bytes:
     """
-    Implemented as per Noise Protocol specification - paragraph 5.1.
+    If k is non-empty returns ENCRYPT(k, n++, ad, plaintext). Otherwise returns plaintext.
 
-    The initialize_key() function takes additional required argument - noise_protocol.
-
-    This class holds an instance of Cipher wrapper. It manages initialisation of underlying cipher function
-    with appropriate key in initialize_key() and rekey() methods.
+    :param ad: bytes sequence
+    :param plaintext: bytes sequence
+    :return: ciphertext bytes sequence
     """
+    if n == MAX_NONCE:
+        raise RuntimeError("Nonce has depleted!")
 
-    def __init__(self, noise_protocol):
-        self.k = None
-        self.n = None
+    if k is None:
+        return plaintext
 
-    def initialize_key(self, key):
-        """
+    ciphertext = encrypt_chacha(k, n, ad, plaintext)
+    return ciphertext
 
-        :param key: Key to set within CipherState
-        """
-        self.k = key
-        self.n = 0
 
-    def encrypt_with_ad(self, ad: bytes, plaintext: bytes) -> bytes:
-        """
-        If k is non-empty returns ENCRYPT(k, n++, ad, plaintext). Otherwise returns plaintext.
+def decrypt_with_ad(k, n, ad: bytes, ciphertext: bytes) -> bytes:
+    """
+    If k is non-empty returns DECRYPT(k, n++, ad, ciphertext). Otherwise returns ciphertext. If an authentication
+    failure occurs in DECRYPT() then n is not incremented and an error is signaled to the caller.
 
-        :param ad: bytes sequence
-        :param plaintext: bytes sequence
-        :return: ciphertext bytes sequence
-        """
-        if self.n == MAX_NONCE:
-            raise RuntimeError("Nonce has depleted!")
+    :param ad: bytes sequence
+    :param ciphertext: bytes sequence
+    :return: plaintext bytes sequence
+    """
+    if n == MAX_NONCE:
+        raise RuntimeError("Nonce has depleted!")
 
-        if self.k is None:
-            return plaintext
-
-        ciphertext = encrypt_chacha(self.k, self.n, ad, plaintext)
-        self.n = self.n + 1
+    if k is None:
         return ciphertext
 
-    def decrypt_with_ad(self, ad: bytes, ciphertext: bytes) -> bytes:
-        """
-        If k is non-empty returns DECRYPT(k, n++, ad, ciphertext). Otherwise returns ciphertext. If an authentication
-        failure occurs in DECRYPT() then n is not incremented and an error is signaled to the caller.
-
-        :param ad: bytes sequence
-        :param ciphertext: bytes sequence
-        :return: plaintext bytes sequence
-        """
-        if self.n == MAX_NONCE:
-            raise RuntimeError("Nonce has depleted!")
-
-        if self.k is None:
-            return ciphertext
-
-        plaintext = decrypt_chacha(self.k, self.n, ad, ciphertext)
-        self.n = self.n + 1
-        return plaintext
+    plaintext = decrypt_chacha(k, n, ad, ciphertext)
+    return plaintext
 
 
 class SymmetricState(object):
@@ -175,8 +156,7 @@ class SymmetricState(object):
         instance.ck = instance.h
 
         # Calls InitializeKey(empty).
-        instance.cipher_state = CipherState(noise_protocol)
-        instance.cipher_state.initialize_key(None)
+        instance.cipher_state = {"k": None, "n": 0}
         noise_protocol.cipher_state_handshake = instance.cipher_state
 
         return instance
@@ -190,7 +170,7 @@ class SymmetricState(object):
         self.ck, temp_k = hkdf(self.ck, input_key_material, 2)
 
         # Calls InitializeKey(temp_k).
-        self.cipher_state.initialize_key(temp_k)
+        self.cipher_state = {"k": temp_k, "n": 0}
 
     def mix_hash(self, data: bytes):
         """
@@ -224,7 +204,10 @@ class SymmetricState(object):
         :param plaintext: bytes sequence
         :return: ciphertext bytes sequence
         """
-        ciphertext = self.cipher_state.encrypt_with_ad(self.h, plaintext)
+        ciphertext = encrypt_with_ad(
+            self.cipher_state["k"], self.cipher_state["n"], self.h, plaintext
+        )
+        self.cipher_state["n"] = self.cipher_state["n"] + 1
         self.mix_hash(ciphertext)
         return ciphertext
 
@@ -236,7 +219,10 @@ class SymmetricState(object):
         :param ciphertext: bytes sequence
         :return: plaintext bytes sequence
         """
-        plaintext = self.cipher_state.decrypt_with_ad(self.h, ciphertext)
+        plaintext = decrypt_with_ad(
+            self.cipher_state["k"], self.cipher_state["n"], self.h, ciphertext
+        )
+        self.cipher_state["n"] = self.cipher_state["n"] + 1
         self.mix_hash(ciphertext)
         return plaintext
 
@@ -251,9 +237,8 @@ class SymmetricState(object):
 
         # Creates two new CipherState objects c1 and c2.
         # Calls c1.InitializeKey(temp_k1) and c2.InitializeKey(temp_k2).
-        c1, c2 = CipherState(self.noise_protocol), CipherState(self.noise_protocol)
-        c1.initialize_key(temp_k1)
-        c2.initialize_key(temp_k2)
+        c1 = {"k": temp_k1, "n": 0}
+        c2 = {"k": temp_k2, "n": 0}
         if self.noise_protocol.handshake_state.initiator:
             self.noise_protocol.cipher_state_encrypt = c1
             self.noise_protocol.cipher_state_decrypt = c2
@@ -644,7 +629,14 @@ class NoiseConnection(object):
                 )
             )
 
-        return self.noise_protocol.cipher_state_encrypt.encrypt_with_ad(None, data)
+        encrypted = encrypt_with_ad(
+            self.noise_protocol.cipher_state_encrypt["k"],
+            self.noise_protocol.cipher_state_encrypt["n"],
+            None,
+            data,
+        )
+        self.noise_protocol.cipher_state_encrypt["n"] += 1
+        return encrypted
 
     def decrypt(self, data: bytes) -> bytes:
         if not self.handshake_finished:
@@ -658,6 +650,13 @@ class NoiseConnection(object):
             )
 
         try:
-            return self.noise_protocol.cipher_state_decrypt.decrypt_with_ad(None, data)
+            plain = decrypt_with_ad(
+                self.noise_protocol.cipher_state_decrypt["k"],
+                self.noise_protocol.cipher_state_decrypt["n"],
+                None,
+                data,
+            )
+            self.noise_protocol.cipher_state_decrypt["n"] += 1
+            return plain
         except InvalidTag:
             raise RuntimeError("Failed authentication of message")

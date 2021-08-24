@@ -137,12 +137,12 @@ class TestVectors(object):
 
                     # Verify split cipherstates keys
                     assert (
-                        initiator.noise_protocol.cipher_state_encrypt.k
-                        == responder.noise_protocol.cipher_state_decrypt.k
+                        initiator.noise_protocol.cipher_state_encrypt["k"]
+                        == responder.noise_protocol.cipher_state_decrypt["k"]
                     )
                     assert (
-                        initiator.noise_protocol.cipher_state_decrypt.k
-                        == responder.noise_protocol.cipher_state_encrypt.k
+                        initiator.noise_protocol.cipher_state_decrypt["k"]
+                        == responder.noise_protocol.cipher_state_encrypt["k"]
                     )
             else:
                 if initiator_to_responder:
