@@ -169,7 +169,7 @@ class SymmetricState(object):
         instance = cls()
         instance.noise_protocol = noise_protocol
 
-        instance.h = hash(noise_protocol.name)
+        instance.h = hash(b"Noise_KK_25519_ChaChaPoly_BLAKE2s")
 
         # Sets ck = h.
         instance.ck = instance.h
@@ -427,7 +427,6 @@ class HandshakeState(object):
         # from the message pattern
         message_pattern = self.message_patterns.pop(0)
         for token in message_pattern:
-            print(token)
             if token == TOKEN_E:
                 # Sets re to the next DHLEN bytes from the message. Calls MixHash(re.public_key).
                 self.re = from_public_bytes(bytes(message[:DHLEN]))
