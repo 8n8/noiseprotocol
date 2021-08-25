@@ -180,19 +180,6 @@ class SymmetricState(object):
         """
         self.h = hash(self.h + data)
 
-    def mix_key_and_hash(self, input_key_material: bytes):
-        # Sets ck, temp_h, temp_k = HKDF(ck, input_key_material, 3).
-        self.ck, temp_h, temp_k = self.noise_protocol.hkdf(
-            self.ck, input_key_material, 3
-        )
-        # Calls MixHash(temp_h).
-        self.mix_hash(temp_h)
-        # If HASHLEN is 64, then truncates temp_k to 32 bytes.
-        if self.noise_protocol.hash_fn.hashlen == 64:
-            temp_k = temp_k[:32]
-        # Calls InitializeKey(temp_k).
-        self.cipher_state.initialize_key(temp_k)
-
     def get_handshake_hash(self):
         return self.h
 
