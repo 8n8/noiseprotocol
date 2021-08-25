@@ -456,6 +456,14 @@ class NoiseProtocol(object):
     def __init__(self):
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         # Preinitialized
+        self.initiator = None
+        self.handshake_hash = None
+
+        self.handshake_state = None
+        self.symmetric_state = None
+        self.cipher_state_handshake = None
+        self.cipher_state_encrypt = None
+        self.cipher_state_decrypt = None
 
         self.keypairs = {"s": None, "e": None, "rs": None, "re": None}
 
