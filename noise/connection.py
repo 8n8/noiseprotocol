@@ -456,7 +456,6 @@ class NoiseProtocol(object):
     def __init__(self):
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         # Preinitialized
-        self.cipher_state_decrypt = None
 
         self.keypairs = {"s": None, "e": None, "rs": None, "re": None}
 
