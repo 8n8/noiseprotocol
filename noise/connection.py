@@ -454,8 +454,6 @@ def hkdf(chaining_key, input_key_material, num_outputs):
 
 class NoiseProtocol(object):
     def __init__(self):
-        self.name = b"Noise_KK_25519_ChaChaPoly_BLAKE2s"
-
         # A valid Pattern instance (see Section 7 of specification (rev 32))
         # Preinitialized
         self.initiator = None
